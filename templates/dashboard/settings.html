@@ -45,10 +45,10 @@
 
       <!-- Profile hero -->
       <div class="set-hero">
-        <div class="set-avatar">S</div>
+        <div class="set-avatar">{{ user.first_name|default:user.username|slice:"1"|upper }}</div>
         <div class="set-hero-info">
-          <div class="set-hero-name">Sam</div>
-          <div class="set-hero-email">sam@example.com</div>
+          <div class="set-hero-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="set-hero-email">{{ user.email }}</div>
         </div>
         <span class="set-chip">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -67,20 +67,20 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="s-fname">First name</label>
-                <input class="form-input" type="text" id="s-fname" value="Sam" />
+                <input class="form-input" type="text" id="s-fname" value="{{ user.first_name }}" />
               </div>
               <div class="form-group">
                 <label for="s-lname">Last name</label>
-                <input class="form-input" type="text" id="s-lname" placeholder="Last name" />
+                <input class="form-input" type="text" id="s-lname" value="{{ user.last_name }}" placeholder="Last name" />
               </div>
             </div>
             <div class="form-group">
               <label for="s-email">Email address</label>
-              <input class="form-input" type="email" id="s-email" value="sam@example.com" />
+              <input class="form-input" type="email" id="s-email" value="{{ user.email }}" />
             </div>
             <div class="form-group">
               <label for="s-phone">Phone number</label>
-              <input class="form-input" type="tel" id="s-phone" placeholder="+234 800 000 0000" />
+              <input class="form-input" type="tel" id="s-phone" value="{{ user.profile.phone }}" placeholder="+234 800 000 0000" />
             </div>
             <button class="btn-primary" type="button">Save Changes</button>
           </div>

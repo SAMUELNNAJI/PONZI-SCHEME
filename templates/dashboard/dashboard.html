@@ -128,7 +128,7 @@
       </div>
       {% endfor %}
 
-      <h1 class="dash-welcome">Welcome, Sam</h1>
+      <h1 class="dash-welcome">Welcome, {{ user.first_name|default:user.username }}</h1>
 
       <!-- Balance card -->
       <div class="balance-card">

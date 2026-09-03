@@ -63,7 +63,7 @@
         <div class="ref-hero-field">
           <div class="ref-hero-label">Your referral code</div>
           <div class="ref-hero-box">
-            <span id="ref-code">PW-SAM001</span>
+            <span id="ref-code">PW-{{ user.username|upper|slice:"10" }}{{ user.id }}</span>
             <button class="btn-copy" onclick="copyCode(event)">Copy</button>
           </div>
         </div>
@@ -71,7 +71,7 @@
         <div class="ref-hero-field">
           <div class="ref-hero-label">Your referral link</div>
           <div class="ref-hero-box">
-            <span id="ref-link">https://premiumwallet.com/signup?ref=PW-SAM001</span>
+            <span id="ref-link">https://premiumwallet.com/signup?ref=PW-{{ user.username|upper|slice:"10" }}{{ user.id }}</span>
             <button class="btn-copy" onclick="copyLink(event)">Copy</button>
           </div>
         </div>

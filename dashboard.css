@@ -407,8 +407,8 @@ body {
 /* ── Plans grid (reuse from landing but inside dashboard) ── */
 .dash-plans-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
   margin-bottom: 18px;
 }
 
@@ -417,7 +417,7 @@ body {
   background: #fff;
   border: 1.5px solid #eceef7;
   border-radius: 18px;
-  padding: 30px 22px 22px;
+  padding: 32px 28px 26px;
   overflow: hidden;
   text-align: left;
   box-shadow: 0 2px 14px rgba(17, 24, 39, 0.05);

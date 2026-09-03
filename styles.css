@@ -234,17 +234,76 @@ nav {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  max-width: 1120px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
+/* Widen cards on smaller laptops — 2 per row instead of 5 cramped ones */
+@media (max-width: 1150px) {
+  .plans-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .plan-card {
+  position: relative;
   background: #ffffff;
   border: 1.5px solid #e0e4f0;
   border-radius: 16px;
   padding: 32px 26px 26px;
   text-align: left;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* ── Plan badges ── */
+.plan-tag {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(249, 115, 22, 0.35);
+}
+
+.plan-tag.basic {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
+  box-shadow: 0 4px 10px rgba(100, 116, 139, 0.35);
+}
+
+.plan-tag.premium {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);
+}
+
+.plan-tag.popular {
+  background: linear-gradient(135deg, #1a3fd4, #4f7cf7);
+  box-shadow: 0 4px 10px rgba(26, 63, 212, 0.35);
+}
+
+.plan-tag.value {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.35);
+}
+
+.plan-tag.hot {
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
+}
+
+.plan-tag.diamond {
+  background: linear-gradient(135deg, #0891b2, #22d3ee);
+  box-shadow: 0 4px 10px rgba(34, 211, 238, 0.35);
+}
+
+.plan-tag.vip {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  box-shadow: 0 4px 10px rgba(168, 85, 247, 0.35);
 }
 
 .plan-card:hover {
@@ -279,8 +338,15 @@ nav {
 .plan-range {
   font-size: 12.5px;
   color: #4b5563;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
   font-weight: 500;
+}
+
+.plan-total {
+  font-size: 12px;
+  color: #15803d;
+  font-weight: 700;
+  margin-bottom: 24px;
 }
 
 .btn-invest {

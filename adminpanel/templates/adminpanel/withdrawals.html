@@ -1,0 +1,48 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}Withdrawals{% endblock %}
+{% block nav_withdrawals %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Withdrawals</h1>
+<p class="page-subtitle">{{ withdrawals_list|length }} withdrawal request{{ withdrawals_list|length|pluralize }}.</p>
+
+<div class="dash-card">
+  <table class="admin-table">
+    <thead>
+      <tr><th>User</th><th>Amount</th><th>Method</th><th>Payout details</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for w in withdrawals_list %}
+      <tr>
+        <td><strong>{{ w.user.username }}</strong></td>
+        <td class="num">₦{{ w.amount|floatformat:"0"|intcomma }}</td>
+        <td>{{ w.get_method_display }}</td>
+        <td>
+          {% if w.method == 'bank' %}
+            {{ w.bank_name }} · {{ w.account_number }}<br><span class="tx-date">{{ w.account_name }}</span>
+          {% else %}
+            <span class="tx-date">{{ w.usdt_address }}</span>
+          {% endif %}
+        </td>
+        <td>{{ w.created_at|date:"M d, Y H:i" }}</td>
+        <td><span class="tx-status {{ w.status }}">{{ w.get_status_display }}</span></td>
+        <td>
+          {% if w.status == 'pending' %}
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ w.pk }}" />
+            <button class="btn-admin-sm green" name="action" value="approve">Approve</button>
+            <button class="btn-admin-sm red" name="action" value="reject">Reject</button>
+          </form>
+          {% else %}<span class="tx-date">reviewed {{ w.reviewed_at|date:"M d, H:i" }}</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No withdrawal requests yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -7,7 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="dashboard.css" />
+  
+  {% load humanize %}
 </head>
 <body>
 
@@ -23,11 +24,12 @@
     </a>
     <div class="dash-nav-right">
       <a href="settings.html" class="btn-dash-settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a>
-      <a href="#" class="btn-dash-admin">
+      {% if user.is_staff %}<a href="/adminpanel/" class="btn-dash-admin">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
         Admin
       </a>
-      <a href="login.html" class="btn-dash-signout">
+      {% endif %}
+      <a href="/logout" class="btn-dash-signout">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign out
       </a>
@@ -86,165 +88,22 @@
       </div>
 
       <div class="dash-plans-grid">
+        {% for plan in plans %}
         <div class="dash-plan-card">
-          <div class="plan-tag basic">Basic</div>
-          <div class="dash-plan-name">Starter Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦7,000</div>
-          <div class="dash-plan-total">Daily ₦210 · Total ₦13,300</div>
+          <div class="plan-tag {{ plan.badge }}">{{ plan.get_badge_display }}</div>
+          <div class="dash-plan-name{% if plan.accent %} accent{% endif %}">{{ plan.name }}</div>
+          <div class="dash-plan-pct">{{ plan.daily_percent|floatformat:"0" }}%</div>
+          <div class="dash-plan-days">daily for {{ plan.duration_days }} days</div>
+          <div class="dash-plan-range">Plan price: ₦{{ plan.price|floatformat:"0"|intcomma }}</div>
+          <div class="dash-plan-total">Daily ₦{{ plan.daily_profit|floatformat:"0"|intcomma }} · Total ₦{{ plan.total_payout|floatformat:"0"|intcomma }}</div>
           <div class="dash-plan-actions">
             <a href="deposit.html" class="btn-plan-invest">Invest now</a>
             <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
           </div>
         </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag basic">Basic</div>
-          <div class="dash-plan-name">Classy Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦15,000</div>
-          <div class="dash-plan-total">Daily ₦450 · Total ₦28,500</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag premium">Premium</div>
-          <div class="dash-plan-name">Royal Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦42,000</div>
-          <div class="dash-plan-total">Daily ₦1,260 · Total ₦79,800</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag premium">Premium</div>
-          <div class="dash-plan-name">Deluxe Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦151,000</div>
-          <div class="dash-plan-total">Daily ₦4,530 · Total ₦286,900</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag popular">Most Popular</div>
-          <div class="dash-plan-name accent">Business Suit</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦250,000</div>
-          <div class="dash-plan-total">Daily ₦7,500 · Total ₦475,000</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag premium">Premium</div>
-          <div class="dash-plan-name">Empire Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦451,000</div>
-          <div class="dash-plan-total">Daily ₦13,530 · Total ₦856,900</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag value">Best Value</div>
-          <div class="dash-plan-name">Platinum Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦720,000</div>
-          <div class="dash-plan-total">Daily ₦21,500 · Total ₦1,366,000</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag hot">🔥 Hot</div>
-          <div class="dash-plan-name">Gold Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦1,000,000</div>
-          <div class="dash-plan-total">Daily ₦30,000 · Total ₦1,900,000</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag diamond">Diamond</div>
-          <div class="dash-plan-name">Diamond Plan</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦2,500,000</div>
-          <div class="dash-plan-total">Daily ₦75,000 · Total ₦4,750,000</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
-        <div class="dash-plan-card">
-          <div class="plan-tag vip">VIP</div>
-          <div class="dash-plan-name accent">Premium Elite</div>
-          <div class="dash-plan-pct">3%</div>
-          <div class="dash-plan-days">daily for 30 days</div>
-          <div class="dash-plan-range">Plan price: ₦5,000,000</div>
-          <div class="dash-plan-total">Daily ₦150,000 · Total ₦9,500,000</div>
-          <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
-          </div>
-        </div>
+        {% endfor %}
       </div>
 
-      <!-- Referral banner -->
-      <div class="ref-hero">
-        <div class="ref-hero-top">
-          <div class="ref-hero-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div>
-            <div class="ref-hero-title">Earn 10% commission on every referral</div>
-            <p class="ref-hero-text">Share your link — when friends invest, you earn instantly.</p>
-          </div>
-        </div>
-
-        <div class="ref-hero-field">
-          <div class="ref-hero-box">
-            <span id="ref-link">https://premiumwallet.com/signup?ref=PW-SAM001</span>
-            <button class="btn-copy" onclick="copyLink(event)">Copy</button>
-          </div>
-        </div>
-
-        <a href="referrals.html" class="ref-hero-cta">
-          View referrals
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
-
-      <div class="dash-card">
-        <div class="dash-card-title">My Active Plans</div>
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-          You have no active investment plans yet.
-        </div>
-      </div>
     </main>
   </div>
 

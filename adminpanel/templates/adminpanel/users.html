@@ -1,0 +1,51 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}Users{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Users</h1>
+<p class="page-subtitle">{{ users_list|length }} registered account{{ users_list|length|pluralize }}</p>
+
+<div class="dash-card">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Name</th><th>Email</th><th>Phone</th><th>Joined</th>
+        <th>Deposits</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users_list %}
+      <tr>
+        <td><strong>{{ u.get_full_name|default:u.username }}</strong>{% if u.is_staff %} <span class="tx-status staff">Staff</span>{% endif %}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.profile.phone|default:"—" }}</td>
+        <td>{{ u.date_joined|date:"M d, Y" }}</td>
+        <td class="num">₦{{ u.deposit_total|default:0|floatformat:"0"|intcomma }}</td>
+        <td><span class="tx-status {% if u.is_active %}approved{% else %}inactive{% endif %}">{% if u.is_active %}Active{% else %}Disabled{% endif %}</span></td>
+        <td>
+          {% if u != request.user %}
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ u.pk }}" />
+            <button class="btn-admin-sm {% if u.is_active %}red{% else %}green{% endif %}" name="action" value="toggle_active">
+              {% if u.is_active %}Disable{% else %}Enable{% endif %}
+            </button>
+            <button class="btn-admin-sm gray" name="action" value="toggle_staff">
+              {% if u.is_staff %}Revoke staff{% else %}Make staff{% endif %}
+            </button>
+          </form>
+          {% else %}
+          <span class="tx-date">You</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No users yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}Plans{% endblock %}
+{% block nav_plans %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Plans</h1>
+<p class="page-subtitle">{{ plans_list|length }} plan{{ plans_list|length|pluralize }} — shown on the site's Plans page and deposit dropdown.</p>
+
+<div class="dash-card">
+  <div class="dash-card-title">Add a new plan</div>
+  <a href="{% url 'adminpanel:plan_add' %}" class="btn-admin-sm">+ New plan</a>
+  <form method="post" style="display:inline; margin-left:8px;">
+    {% csrf_token %}
+    <button class="btn-admin-sm gray" name="action" value="import">Import the 10 default plans</button>
+  </form>
+</div>
+
+<div class="dash-card">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>#</th><th>Name</th><th>Badge</th><th>Price</th>
+        <th>Daily</th><th>Days</th><th>Active</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in plans_list %}
+      <tr>
+        <td>{{ p.sort_order }}</td>
+        <td><strong>{{ p.name }}</strong>{% if p.accent %} <span class="tx-status staff">Accent</span>{% endif %}</td>
+        <td><span class="tx-status approved">{{ p.get_badge_display }}</span></td>
+        <td class="num">₦{{ p.price|floatformat:"0"|intcomma }}</td>
+        <td class="num">₦{{ p.daily_profit|floatformat:"0"|intcomma }} ({{ p.daily_percent }}%)</td>
+        <td>{{ p.duration_days }}</td>
+        <td><span class="tx-status {% if p.is_active %}approved{% else %}inactive{% endif %}">{% if p.is_active %}Yes{% else %}No{% endif %}</span></td>
+        <td>
+          <a class="btn-admin-sm" href="{% url 'adminpanel:plan_edit' p.pk %}">Edit</a>
+          <form method="post" style="display:inline" onsubmit="return confirm('Delete plan {{ p.name }}?')">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ p.pk }}" />
+            <button class="btn-admin-sm red" name="action" value="delete">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8">No plans yet — use "Import the 10 default plans".</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

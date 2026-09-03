@@ -1,0 +1,56 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}{% if plan %}Edit plan{% else %}New plan{% endif %}{% endblock %}
+{% block nav_plans %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{% if plan %}Edit: {{ plan.name }}{% else %}New plan{% endif %}</h1>
+<p class="page-subtitle"><a href="{% url 'adminpanel:plans' %}">← Back to plans</a></p>
+
+<div class="dash-card">
+  {% if error %}<div class="notice-box error">⚠️ {{ error }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="admin-form-grid">
+      <div class="form-group full">
+        <label for="id_name">Plan name</label>
+        <input class="form-input" id="id_name" name="name" value="{{ plan.name|default:'' }}" required />
+      </div>
+      <div class="form-group">
+        <label for="id_price">Price (₦)</label>
+        <input class="form-input" id="id_price" name="price" type="number" step="0.01" min="1" value="{{ plan.price|default:'' }}" required />
+      </div>
+      <div class="form-group">
+        <label for="id_badge">Badge</label>
+        <select class="form-select" id="id_badge" name="badge">
+          {% for value, label in badges %}
+          <option value="{{ value }}" {% if plan and plan.badge == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="id_percent">Daily percent (%)</label>
+        <input class="form-input" id="id_percent" name="daily_percent" type="number" step="0.01" min="0.01" value="{{ plan.daily_percent|default:'3' }}" required />
+      </div>
+      <div class="form-group">
+        <label for="id_days">Duration (days)</label>
+        <input class="form-input" id="id_days" name="duration_days" type="number" min="1" value="{{ plan.duration_days|default:'30' }}" required />
+      </div>
+      <div class="form-group">
+        <label for="id_sort">Sort order</label>
+        <input class="form-input" id="id_sort" name="sort_order" type="number" min="0" value="{{ plan.sort_order|default:'0' }}" />
+      </div>
+      <div class="form-group full">
+        <label style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" name="is_active" {% if not plan or plan.is_active %}checked{% endif %} /> Active (visible on site)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+          <input type="checkbox" name="accent" {% if plan and plan.accent %}checked{% endif %} /> Blue accent name
+        </label>
+      </div>
+    </div>
+    <button class="btn-primary" type="submit">{% if plan %}Save changes{% else %}Create plan{% endif %}</button>
+  </form>
+</div>
+{% endblock %}

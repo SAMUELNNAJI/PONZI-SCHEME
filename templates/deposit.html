@@ -7,7 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="dashboard.css" />
+  
+  {% load humanize %}
 </head>
 <body>
 
@@ -20,8 +21,9 @@
     </a>
     <div class="dash-nav-right">
       <a href="settings.html" class="btn-dash-settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a>
-      <a href="#" class="btn-dash-admin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Admin</a>
-      <a href="login.html" class="btn-dash-signout"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a>
+      {% if user.is_staff %}<a href="/adminpanel/" class="btn-dash-admin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Admin</a>
+      {% endif %}
+      <a href="/logout" class="btn-dash-signout"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a>
     </div>
   </nav>
 
@@ -42,12 +44,18 @@
       <h1 class="page-title">Deposit Funds</h1>
       <p class="page-subtitle">Add money to your wallet via bank transfer or USDT TRC20.</p>
 
+      {% if submitted %}<div class="notice-box success">✅ Deposit submitted! You will receive payment instructions shortly.</div>{% endif %}
+      {% if error %}<div class="notice-box error">⚠️ {{ error }}</div>{% endif %}
+
       <div class="dash-card dep-card">
         <div class="dash-card-title">Choose deposit method</div>
 
+        <form method="post">
+        {% csrf_token %}
+
         <div class="form-group">
           <label>Payment method</label>
-          <input type="hidden" id="dep-method" value="bank" />
+          <input type="hidden" id="dep-method" name="method" value="bank" />
           <div class="dep-method-grid">
             <div class="dep-method selected" data-value="bank" onclick="pickMethod(this)">
               <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M3 10l9-7 9 7"/><path d="M9 21v-6h6v6"/></svg>
@@ -66,7 +74,7 @@
           <label for="dep-amount">Amount (₦)</label>
           <div class="dep-amount-wrap">
             <span class="dep-prefix">₦</span>
-            <input class="form-input" type="number" id="dep-amount" placeholder="e.g. 10000" min="5000" />
+            <input class="form-input" type="number" id="dep-amount" name="amount" placeholder="e.g. 10000" min="5000" />
           </div>
           <div class="dep-chips">
             <button type="button" class="dep-chip" onclick="setAmount(this, 5000)">₦5,000</button>
@@ -81,16 +89,9 @@
           <label for="dep-plan">Select plan</label>
           <select class="form-select" id="dep-plan">
             <option value="">Select a plan</option>
-            <option value="starter">Starter Plan – 3% daily / 30 days (₦7,000)</option>
-            <option value="classy">Classy Plan – 3% daily / 30 days (₦15,000)</option>
-            <option value="royal">Royal Plan – 3% daily / 30 days (₦42,000)</option>
-            <option value="deluxe">Deluxe Plan – 3% daily / 30 days (₦151,000)</option>
-            <option value="business">Business Suit – 3% daily / 30 days (₦250,000)</option>
-            <option value="empire">Empire Plan – 3% daily / 30 days (₦451,000)</option>
-            <option value="platinum">Platinum Plan – 3% daily / 30 days (₦720,000)</option>
-            <option value="gold">Gold Plan – 3% daily / 30 days (₦1,000,000)</option>
-            <option value="diamond">Diamond Plan – 3% daily / 30 days (₦2,500,000)</option>
-            <option value="premium-elite">Premium Elite – 3% daily / 30 days (₦5,000,000)</option>
+            {% for plan in plans %}
+            <option value="{{ plan.id }}">{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -98,18 +99,36 @@
           Minimum deposit is ₦7,000. After submitting, you will receive payment instructions. Your investment activates once payment is confirmed.
         </div>
 
-        <button class="btn-primary" type="button">
+        <button class="btn-primary" type="submit">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
           Proceed to Deposit
         </button>
+        </form>
       </div>
 
       <div class="dash-card dep-card">
         <div class="dash-card-title">Recent Deposits</div>
+        {% if recent_deposits %}
+        <div class="tx-list">
+          {% for d in recent_deposits %}
+          <div class="tx-item">
+            <div>
+              <div class="tx-name">{{ d.get_method_display }}</div>
+              <div class="tx-date">{{ d.created_at|date:"M d, Y H:i" }}</div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount">₦{{ d.amount|floatformat:"0"|intcomma }}</div>
+              <span class="tx-status {{ d.status }}">{{ d.get_status_display }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
         <div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
           No deposits yet.
         </div>
+        {% endif %}
       </div>
     </main>
   </div>

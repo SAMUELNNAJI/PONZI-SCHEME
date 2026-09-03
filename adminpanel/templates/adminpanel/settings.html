@@ -1,0 +1,36 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Settings{% endblock %}
+{% block nav_settings %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Settings</h1>
+<p class="page-subtitle">Platform-wide configuration.</p>
+
+{% if saved %}<div class="notice-box success">✅ Settings saved.</div>{% endif %}
+
+<div class="dash-card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="admin-form-grid">
+      <div class="form-group">
+        <label for="id_site_name">Site name</label>
+        <input class="form-input" id="id_site_name" name="site_name" value="{{ site.site_name }}" />
+      </div>
+      <div class="form-group">
+        <label for="id_support_email">Support email</label>
+        <input class="form-input" id="id_support_email" name="support_email" value="{{ site.support_email }}" />
+      </div>
+      <div class="form-group">
+        <label for="id_min_deposit">Minimum deposit (₦)</label>
+        <input class="form-input" id="id_min_deposit" name="min_deposit" type="number" step="0.01" min="0" value="{{ site.min_deposit }}" />
+      </div>
+      <div class="form-group">
+        <label for="id_min_withdraw">Minimum withdrawal (₦)</label>
+        <input class="form-input" id="id_min_withdraw" name="min_withdraw" type="number" step="0.01" min="0" value="{{ site.min_withdraw }}" />
+      </div>
+    </div>
+    <button class="btn-primary" type="submit">Save settings</button>
+  </form>
+</div>
+{% endblock %}

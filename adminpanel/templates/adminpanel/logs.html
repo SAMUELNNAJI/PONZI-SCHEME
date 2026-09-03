@@ -1,0 +1,26 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Logs{% endblock %}
+{% block nav_logs %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Logs</h1>
+<p class="page-subtitle">Recent platform activity.</p>
+
+<div class="dash-card">
+  <table class="admin-table">
+    <thead><tr><th>When</th><th>Actor</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for lg in logs_list %}
+      <tr>
+        <td>{{ lg.created_at|date:"M d, Y H:i" }}</td>
+        <td>{{ lg.actor_name }}</td>
+        <td>{{ lg.action }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3">No activity yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}Notify{% endblock %}
+{% block nav_notify %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Notify</h1>
+<p class="page-subtitle">Send announcements that display on every user's dashboard.</p>
+
+<div class="dash-card">
+  <div class="dash-card-title">New notification</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="admin-form-grid">
+      <div class="form-group full">
+        <label for="id_title">Title</label>
+        <input class="form-input" id="id_title" name="title" placeholder="e.g. Maintenance on Saturday" required />
+      </div>
+      <div class="form-group full">
+        <label for="id_body">Message</label>
+        <textarea class="form-input" id="id_body" name="body" rows="3" placeholder="Write your announcement…" required></textarea>
+      </div>
+    </div>
+    <button class="btn-primary" type="submit" name="action" value="create">Publish notification</button>
+  </form>
+</div>
+
+<div class="dash-card">
+  <div class="dash-card-title">Existing notifications</div>
+  <table class="admin-table">
+    <thead><tr><th>Title</th><th>Message</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for n in notifications %}
+      <tr>
+        <td><strong>{{ n.title }}</strong></td>
+        <td>{{ n.body }}</td>
+        <td>{{ n.created_at|date:"M d, Y H:i" }}</td>
+        <td><span class="tx-status {% if n.is_active %}approved{% else %}inactive{% endif %}">{% if n.is_active %}Active{% else %}Hidden{% endif %}</span></td>
+        <td>
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ n.pk }}" />
+            <button class="btn-admin-sm gray" name="action" value="toggle">{% if n.is_active %}Hide{% else %}Show{% endif %}</button>
+            <button class="btn-admin-sm red" name="action" value="delete">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No notifications yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

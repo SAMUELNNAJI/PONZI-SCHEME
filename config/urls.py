@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
     path('', include('authentication.urls')),
+    path('adminpanel/', include('adminpanel.urls')),
     # Serve the project's css/js at their bare filenames (matching the
     # relative references used inside the HTML), e.g. /styles.css, /main.js
     re_path(

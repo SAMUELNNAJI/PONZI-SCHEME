@@ -1,0 +1,43 @@
+/* ============================================================
+   Premium Wallet — Main JavaScript
+   ============================================================ */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* ── Invest now buttons → signup ── */
+  document.querySelectorAll('.btn-invest').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.location.href = 'signup.html';
+    });
+  });
+
+  /* ── Scroll-in animation for plan cards ── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity   = '1';
+        entry.target.style.transform = 'translateY(0)';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.plan-card').forEach((card, i) => {
+    card.style.opacity    = '0';
+    card.style.transform  = 'translateY(24px)';
+    card.style.transition = `opacity 0.45s ease ${i * 0.08}s, transform 0.45s ease ${i * 0.08}s`;
+    observer.observe(card);
+  });
+
+  /* ── Smooth scroll for internal anchor links ── */
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', e => {
+      const target = document.querySelector(anchor.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+});

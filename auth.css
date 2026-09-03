@@ -1,0 +1,209 @@
+/* ============================================================
+   Premium Wallet — Auth Pages Stylesheet (login / signup)
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Same radial gradient as hero — bright centre to deep navy edges */
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 0%,
+      #2d5be3 0%,
+      #1a3fd4 35%,
+      #1230a0 70%,
+      #0d1f78 100%);
+  padding: 24px 16px;
+}
+
+/* ── Logo above card ── */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  margin-bottom: 28px;
+}
+
+.auth-logo .logo-circle {
+  width: 38px;
+  height: 38px;
+  background: #1a3fd4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.35);
+}
+
+.auth-logo .logo-circle svg {
+  width: 20px;
+  height: 20px;
+  stroke: #ffffff;
+}
+
+.auth-logo-text {
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+/* ── Card ── */
+.auth-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 32px 32px 28px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 24px 64px rgba(10, 20, 80, 0.28);
+}
+
+/* ── Tab switcher ── */
+.auth-tabs {
+  display: flex;
+  background: #f0f2f9;
+  border-radius: 50px;
+  padding: 4px;
+  margin-bottom: 28px;
+}
+
+.auth-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  border-radius: 50px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6b7280;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  display: block;
+}
+
+.auth-tab.active {
+  background: #ffffff;
+  color: #1a3fd4;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+}
+
+/* ── Form fields ── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-input {
+  width: 100%;
+  background: #f0f2f9;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  color: #111827;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.auth-input::placeholder {
+  color: #9ca3af;
+}
+
+.auth-input:focus {
+  border-color: #1a3fd4;
+  background: #ffffff;
+}
+
+/* ── Submit button ── */
+.btn-auth-submit {
+  width: 100%;
+  background: #1a3fd4;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 4px;
+  letter-spacing: 0.1px;
+  transition: background 0.18s;
+}
+
+.btn-auth-submit:hover {
+  background: #1535b8;
+}
+
+/* ── Forgot password / helper links ── */
+.auth-footer-link {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.auth-footer-link a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.auth-footer-link a:hover {
+  color: #1a3fd4;
+  text-decoration: underline;
+}
+
+/* ── Name row (signup only) ── */
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Terms text (signup only) ── */
+.auth-terms {
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+
+.auth-terms a {
+  color: #1a3fd4;
+  text-decoration: none;
+}
+
+.auth-terms a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 18px 22px;
+    border-radius: 14px;
+  }
+
+  .auth-logo {
+    margin-bottom: 22px;
+  }
+
+  .name-row {
+    grid-template-columns: 1fr;
+  }
+}

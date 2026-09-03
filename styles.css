@@ -1,0 +1,630 @@
+/* ============================================================
+   Premium Wallet — Main Stylesheet
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  background: #ffffff;
+  min-width: 320px;
+}
+
+/* ────────────────── NAVBAR ────────────────── */
+nav {
+  background: #1a3fd4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 62px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.nav-logo .logo-circle {
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-logo .logo-circle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-nav-signin {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 14px;
+  font-family: inherit;
+  border-radius: 6px;
+}
+
+.btn-nav-getstarted {
+  background: #ffffff;
+  border: none;
+  color: #1a3fd4;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 9px 20px;
+  border-radius: 7px;
+  font-family: inherit;
+}
+
+/* ────────────────── HERO ────────────────── */
+.hero {
+  background: linear-gradient(160deg, #1a3fd4 0%, #1535b8 55%, #1230a0 100%);
+  padding: 72px 20px 120px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 {
+  font-size: 50px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.13;
+  max-width: 580px;
+  margin: 0 auto 18px;
+  letter-spacing: -0.5px;
+}
+
+.hero-sub {
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.86);
+  max-width: 440px;
+  margin: 0 auto 34px;
+  line-height: 1.7;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-hero-primary {
+  background: #ffffff;
+  color: #1a3fd4;
+  border: none;
+  padding: 13px 26px;
+  border-radius: 50px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: inherit;
+  letter-spacing: -0.1px;
+}
+
+.btn-hero-primary svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  padding: 13px 26px;
+  border-radius: 50px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ────────────────── FEATURE STRIP ────────────────── */
+.features-outer {
+  background: #f0f2f9;
+  padding: 80px 20px 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.features-inner {
+  max-width: 980px;
+  margin: -80px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.feat-card {
+  background: #ffffff;
+  border: 1px solid #e2e6f0;
+  border-radius: 14px;
+  padding: 28px 26px 30px;
+  box-shadow: 0 6px 28px rgba(20, 40, 120, 0.09);
+}
+
+.feat-icon-wrap {
+  width: 40px;
+  height: 40px;
+  background: #eef1fc;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.feat-icon-wrap svg {
+  width: 20px;
+  height: 20px;
+  stroke: #1a3fd4;
+}
+
+.feat-card h3 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.feat-card p {
+  font-size: 13px;
+  color: #1a3fd4;
+  line-height: 1.55;
+}
+
+/* ────────────────── PLANS SECTION ────────────────── */
+.plans-section {
+  background: #f0f2f9;
+  padding: 80px 32px 72px;
+  text-align: center;
+}
+
+.plans-section h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.plans-sub {
+  font-size: 14.5px;
+  color: #6b7280;
+  margin-bottom: 44px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.plan-card {
+  background: #ffffff;
+  border: 1.5px solid #e0e4f0;
+  border-radius: 16px;
+  padding: 32px 26px 26px;
+  text-align: left;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.plan-card:hover {
+  box-shadow: 0 8px 32px rgba(20, 50, 171, 0.12);
+  transform: translateY(-3px);
+}
+
+.plan-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.plan-label.accent { color: #1a3fd4; }
+
+.plan-pct {
+  font-size: 44px;
+  font-weight: 800;
+  color: #1a3fd4;
+  line-height: 1.05;
+  margin-bottom: 4px;
+}
+
+.plan-days {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+
+.plan-range {
+  font-size: 12.5px;
+  color: #4b5563;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.btn-invest {
+  display: block;
+  width: 100%;
+  background: #1a3fd4;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.1px;
+  transition: background 0.18s ease;
+}
+
+.btn-invest:hover {
+  background: #1535b8;
+}
+
+/* ────────────────── HOW IT WORKS ────────────────── */
+.how-section {
+  background: #eef0f8;
+  padding: 70px 20px 72px;
+  text-align: center;
+}
+
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+.how-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.how-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.how-icon svg {
+  width: 46px;
+  height: 46px;
+  stroke: #1a3fd4;
+}
+
+.how-step h3 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.how-step p {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+/* ────────────────── FOOTER ────────────────── */
+footer {
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 26px 40px 22px;
+}
+
+.footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.footer-logo .logo-circle {
+  width: 34px;
+  height: 34px;
+  background: #1a3fd4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.footer-logo .logo-circle svg {
+  width: 18px;
+  height: 18px;
+  stroke: #ffffff;
+}
+
+.footer-logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.footer-links {
+  display: flex;
+  gap: 22px;
+}
+
+.footer-links a {
+  font-size: 13px;
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-links a:hover { color: #111827; }
+
+.footer-note {
+  font-size: 11.5px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   RESPONSIVE — Tablet (≤ 768px) & Mobile (≤ 480px)
+   ============================================================ */
+
+/* ── TABLET ── */
+@media (max-width: 768px) {
+
+  /* Navbar */
+  nav {
+    padding: 0 20px;
+    height: 56px;
+  }
+
+  .nav-logo-text {
+    font-size: 15.5px;
+  }
+
+  .btn-nav-signin {
+    font-size: 13.5px;
+    padding: 7px 10px;
+  }
+
+  .btn-nav-getstarted {
+    font-size: 13.5px;
+    padding: 8px 16px;
+  }
+
+  /* Hero — centered, smaller heading */
+  .hero {
+    padding: 52px 20px 120px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    margin: 0 auto 16px;
+    max-width: 100%;
+  }
+
+  .hero-sub {
+    font-size: 14px;
+    margin: 0 auto 28px;
+    max-width: 100%;
+  }
+
+  /* Buttons: stacked, full width */
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    justify-content: center;
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 14.5px;
+  }
+
+  /* Feature cards — stacked, individually rounded with gaps */
+  .features-outer {
+    padding: 80px 12px 32px;
+  }
+
+  .features-inner {
+    grid-template-columns: 1fr;
+    margin: -80px 0 0;
+    max-width: 100%;
+    gap: 10px;
+    padding: 0;
+  }
+
+  .feat-card {
+    border-radius: 14px;
+    border: 1px solid #e2e6f0;
+  }
+
+  /* Plans — 2-column grid on tablet */
+  .plans-section {
+    padding: 60px 16px 52px;
+  }
+
+  .plans-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  /* How it works — stacked */
+  .how-steps {
+    grid-template-columns: 1fr;
+    max-width: 340px;
+    gap: 36px;
+  }
+
+  /* Footer — stacked */
+  .footer-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  footer {
+    padding: 24px 20px 20px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 14px 20px;
+  }
+}
+
+/* ── MOBILE ── */
+@media (max-width: 480px) {
+
+  /* Navbar — tighter */
+  nav {
+    padding: 0 16px;
+    height: 52px;
+  }
+
+  .nav-logo-text {
+    font-size: 14.5px;
+  }
+
+  .btn-nav-signin {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  .btn-nav-getstarted {
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 6px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 40px 16px 120px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+    line-height: 1.18;
+    letter-spacing: -0.3px;
+    margin: 0 auto 16px;
+  }
+
+  .hero-sub {
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    font-size: 14px;
+    padding: 16px 18px;
+  }
+
+  /* Feature cards */
+  .features-outer {
+    padding: 80px 8px 28px;
+  }
+
+  .features-inner {
+    margin: -80px 0 0;
+  }
+
+  .feat-card {
+    padding: 20px 18px 22px;
+  }
+
+  /* Plans — single column on mobile */
+  .plans-section {
+    padding: 52px 12px 44px;
+  }
+
+  .plans-section h2 {
+    font-size: 22px;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .plan-pct {
+    font-size: 38px;
+  }
+
+  /* How it works */
+  .how-section {
+    padding: 52px 16px 56px;
+  }
+
+  .how-steps {
+    max-width: 100%;
+  }
+
+  /* Footer */
+  footer {
+    padding: 20px 16px 18px;
+  }
+
+  .footer-links a {
+    font-size: 12.5px;
+  }
+
+  .footer-note {
+    font-size: 11px;
+  }
+}

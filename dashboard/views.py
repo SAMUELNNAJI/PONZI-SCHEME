@@ -9,13 +9,13 @@ from .models import Deposit, Notification, Plan, Transaction, Withdrawal
 
 def index(request):
     """Landing page (public)."""
-    return render(request, 'index.html')
+    return render(request, 'dashboard/index.html')
 
 
 @login_required
 def plans(request):
     """All investment plans, rendered from the database."""
-    return render(request, 'plans.html', {
+    return render(request, 'dashboard/plans.html', {
         'plans': Plan.objects.filter(is_active=True),
     })
 
@@ -35,7 +35,7 @@ def dashboard(request):
         },
         'notifications': Notification.objects.filter(is_active=True)[:5],
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'dashboard/dashboard.html', context)
 
 
 @login_required
@@ -69,7 +69,7 @@ def deposit(request):
             log_action(request.user, f'Submitted a deposit of ₦{amount:,.0f}')
             return redirect('/deposit.html?submitted=1')
 
-    return render(request, 'deposit.html', {
+    return render(request, 'dashboard/deposit.html', {
         'plans': plans,
         'error': error,
         'submitted': request.GET.get('submitted') == '1',
@@ -118,7 +118,7 @@ def withdraw(request):
             log_action(request.user, f'Requested a withdrawal of ₦{amount:,.0f}')
             return redirect('/withdraw.html?submitted=1')
 
-    return render(request, 'withdraw.html', {
+    return render(request, 'dashboard/withdraw.html', {
         'error': error,
         'submitted': request.GET.get('submitted') == '1',
         'recent_withdrawals': request.user.withdrawals.all()[:5],
@@ -128,7 +128,7 @@ def withdraw(request):
 @login_required
 def history(request):
     """Transaction history."""
-    return render(request, 'history.html', {
+    return render(request, 'dashboard/history.html', {
         'transactions': request.user.transactions.all()[:20],
     })
 
@@ -136,10 +136,10 @@ def history(request):
 @login_required
 def referrals(request):
     """Referrals page."""
-    return render(request, 'referrals.html')
+    return render(request, 'dashboard/referrals.html')
 
 
 @login_required
 def settings_view(request):
     """Account settings."""
-    return render(request, 'settings.html')
+    return render(request, 'dashboard/settings.html')

@@ -29,7 +29,7 @@ def login_view(request):
             login(request, user)
             return _safe_redirect(request)
         error = 'Invalid email or password.'
-    return render(request, 'login.html', {'error': error})
+    return render(request, 'authentication/login.html', {'error': error})
 
 
 def signup_view(request):
@@ -65,7 +65,7 @@ def signup_view(request):
                 error = ' '.join(exc.messages)
             except IntegrityError:
                 error = 'An account with this email already exists. Try signing in.'
-    return render(request, 'signup.html', {'error': error})
+    return render(request, 'authentication/signup.html', {'error': error})
 
 
 def logout_view(request):

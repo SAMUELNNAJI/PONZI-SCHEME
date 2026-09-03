@@ -9,22 +9,39 @@ from .models import Profile
 
 
 def _safe_redirect(request):
-    """Redirect to `next` if it is a safe local URL, else the dashboard."""
+    """Redirect to `next` if it is a safe local URL, else to an appropriate home."""
     next_url = request.GET.get('next') or request.POST.get('next')
     if next_url and url_has_allowed_host_and_scheme(
         next_url, allowed_hosts={request.get_host()}
     ):
         return redirect(next_url)
+    if request.user.is_staff:
+        return redirect('/adminpanel/')
     return redirect('dashboard:dashboard_page')
 
 
 def login_view(request):
-    """Sign in with email + password."""
+    """Sign in with username or email + password."""
     error = None
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
+        identifier = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
-        user = authenticate(request, username=email, password=password)
+
+        # 1) Try the input directly as a username.
+        user = authenticate(request, username=identifier, password=password)
+
+        # 2) Fall back to a case-insensitive email lookup (e.g. superusers
+        #    created via createsuperuser have a username different from email).
+        if user is None:
+            User = get_user_model()
+            email_user = User.objects.filter(email__iexact=identifier).first()
+            if email_user is not None:
+                user = authenticate(
+                    request,
+                    username=email_user.username,
+                    password=password,
+                )
+
         if user is not None:
             login(request, user)
             return _safe_redirect(request)

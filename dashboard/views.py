@@ -7,8 +7,9 @@ def index(request):
     return render(request, 'index.html')
 
 
+@login_required
 def plans(request):
-    """All investment plans (public)."""
+    """All investment plans."""
     return render(request, 'plans.html')
 
 

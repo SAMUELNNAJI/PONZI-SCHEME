@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-jype7h1_jpzysjqq0riz7=(8d4uk=(mpgchpef+j_$777aa7bm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    'authentication',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+# ── Authentication flow ─────────────────────────────────────────────
+# Users sign in with their email (stored as the username).
+LOGIN_URL = '/login.html'
+LOGIN_REDIRECT_URL = '/dashboard.html'
+LOGOUT_REDIRECT_URL = '/index.html'
 
 
 # Database

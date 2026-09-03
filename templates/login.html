@@ -32,7 +32,9 @@
     </div>
 
     <!-- Form -->
-    <form class="auth-form" action="dashboard.html" method="get">
+    <form class="auth-form" method="post">
+      {% csrf_token %}
+      {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
       <input
         class="auth-input"
         type="email"

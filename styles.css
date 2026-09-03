@@ -88,7 +88,7 @@ nav {
 /* ────────────────── HERO ────────────────── */
 .hero {
   background: linear-gradient(160deg, #1a3fd4 0%, #1535b8 55%, #1230a0 100%);
-  padding: 72px 20px 120px;
+  padding: 72px 20px 150px;
   text-align: center;
   position: relative;
   z-index: 1;
@@ -163,7 +163,7 @@ nav {
 
 .features-inner {
   max-width: 980px;
-  margin: -80px auto 0;
+  margin: -95px auto 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
@@ -444,7 +444,7 @@ footer {
 
   /* Hero — centered, smaller heading */
   .hero {
-    padding: 52px 20px 120px;
+    padding: 52px 20px 150px;
     text-align: center;
   }
 
@@ -482,7 +482,7 @@ footer {
 
   .features-inner {
     grid-template-columns: 1fr;
-    margin: -80px 0 0;
+    margin: -95px 0 0;
     max-width: 100%;
     gap: 10px;
     padding: 0;
@@ -553,7 +553,7 @@ footer {
 
   /* Hero */
   .hero {
-    padding: 40px 16px 120px;
+    padding: 40px 16px 150px;
     text-align: center;
   }
 
@@ -581,7 +581,7 @@ footer {
   }
 
   .features-inner {
-    margin: -80px 0 0;
+    margin: -95px 0 0;
   }
 
   .feat-card {

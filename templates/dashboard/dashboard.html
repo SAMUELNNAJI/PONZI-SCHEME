@@ -271,11 +271,37 @@
           </svg>
           Notifications
         </div>
+        {% if notifications %}
+        {% for note in notifications %}
+        <div class="notify-item">
+          <div class="notify-item-title">{{ note.title }}</div>
+          <div class="notify-item-body">{{ note.body }}</div>
+          <div class="notify-item-date">{{ note.created_at|timesince }} ago</div>
+        </div>
+        {% endfor %}
+        {% else %}
         <p class="info-empty">No notifications.</p>
+        {% endif %}
       </div>
 
     </main>
   </div>
+
+  <!-- ── NOTIFICATION POPUP MODAL ── -->
+  {% if latest_notification %}
+  <div id="notifyModal" class="notify-modal-overlay">
+    <div class="notify-modal">
+      <button class="notify-modal-close" onclick="document.getElementById('notifyModal').style.display='none'">&times;</button>
+      <div class="notify-modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <h3 class="notify-modal-title">{{ latest_notification.title }}</h3>
+      <p class="notify-modal-body">{{ latest_notification.body }}</p>
+      <div class="notify-modal-time">{{ latest_notification.created_at|timesince }} ago</div>
+      <button class="notify-modal-btn" onclick="document.getElementById('notifyModal').style.display='none'">Got it</button>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- ── MOBILE BOTTOM NAV ── -->
   <nav class="bottom-nav">

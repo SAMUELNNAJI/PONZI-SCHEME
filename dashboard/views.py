@@ -34,6 +34,7 @@ def dashboard(request):
             'total_referrals': 0,
         },
         'notifications': Notification.objects.filter(is_active=True)[:5],
+        'latest_notification': Notification.objects.filter(is_active=True).first(),
     }
     return render(request, 'dashboard/dashboard.html', context)
 

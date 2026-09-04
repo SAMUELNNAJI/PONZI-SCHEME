@@ -1849,3 +1849,22 @@ body {
   font-size: 11px;
   color: #999;
 }
+
+/* ── View referrals button ── */
+.view-referrals-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 13px 22px;
+  border-radius: 12px;
+  background: #1a3fd4;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.view-referrals-btn:hover { background: #1632a8; }
+.view-referrals-btn svg { width: 20px; height: 20px; stroke: #fff; }

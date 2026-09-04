@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from adminpanel.models import SiteSetting, log_action
 
-from .models import Deposit, Notification, Plan, Transaction, Withdrawal
+from .models import Deposit, Notification, NotificationDismissal, Plan, Transaction, Withdrawal
 
 
 def index(request):
@@ -24,17 +26,40 @@ def plans(request):
 def dashboard(request):
     """User dashboard — includes admin notifications."""
     user = request.user
+    approved_deposits = user.deposits.filter(status='approved')
+    total_deposit = approved_deposits.aggregate(t=Sum('amount'))['t'] or 0
+
+    # Get active plans from approved deposits (unique plans)
+    active_plan_ids = approved_deposits.values_list('plan', flat=True).distinct()
+    active_plans = Plan.objects.filter(id__in=active_plan_ids, is_active=True)
+
+    # Referral balance from profile
+    referral_balance = getattr(user.profile, 'referral_balance', 0) or 0
+    referred_count = user.profile.referrals.count()
+
+    # Total balance = approved deposits + referral earnings
+    balance = total_deposit + referral_balance
+
+    # Notifications: exclude ones the user has dismissed
+    dismissed_ids = NotificationDismissal.objects.filter(
+        user=user
+    ).values_list('notification_id', flat=True)
+    active_notifications = Notification.objects.filter(is_active=True).exclude(
+        id__in=dismissed_ids
+    )
+
     context = {
         'stats': {
-            'balance': 0,
-            'total_deposit': user.deposits.filter(status='approved')
-                .aggregate(t=Sum('amount'))['t'] or 0,
-            'total_earned': 0,
-            'active_plans': 0,
-            'total_referrals': 0,
+            'balance': balance,
+            'total_deposit': total_deposit,
+            'total_earned': referral_balance,
+            'active_plans': active_plans.count(),
+            'total_referrals': referred_count,
+            'referral_balance': referral_balance,
         },
-        'notifications': Notification.objects.filter(is_active=True)[:5],
-        'latest_notification': Notification.objects.filter(is_active=True).first(),
+        'active_plans_list': active_plans,
+        'notifications': active_notifications[:5],
+        'latest_notification': active_notifications.first(),
     }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -144,3 +169,18 @@ def referrals(request):
 def settings_view(request):
     """Account settings."""
     return render(request, 'dashboard/settings.html')
+
+
+@login_required
+@require_POST
+def dismiss_notification(request):
+    """Mark a notification as dismissed for the current user (AJAX)."""
+    notification_id = request.POST.get('notification_id')
+    if notification_id:
+        notification = Notification.objects.filter(id=notification_id, is_active=True).first()
+        if notification:
+            NotificationDismissal.objects.get_or_create(
+                user=request.user, notification=notification
+            )
+            return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'error'}, status=400)

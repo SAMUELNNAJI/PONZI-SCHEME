@@ -184,3 +184,21 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class NotificationDismissal(models.Model):
+    """Tracks which notifications a user has dismissed (so they don't reappear)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dismissed_notifications'
+    )
+    notification = models.ForeignKey(
+        Notification, on_delete=models.CASCADE, related_name='dismissals'
+    )
+    dismissed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'notification')
+
+    def __str__(self):
+        return f"{self.user.username} dismissed '{self.notification.title}'"

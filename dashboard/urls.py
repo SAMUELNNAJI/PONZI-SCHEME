@@ -32,4 +32,7 @@ urlpatterns = [
     path('referrals', views.referrals, name='referrals_clean'),
     path('settings.html', views.settings_view, name='settings'),
     path('settings', views.settings_view, name='settings_clean'),
+
+    # AJAX: dismiss a notification so it never shows again for this user
+    path('api/notification/dismiss', views.dismiss_notification, name='dismiss_notification'),
 ]

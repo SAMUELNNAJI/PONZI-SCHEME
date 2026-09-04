@@ -5,6 +5,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from adminpanel.models import SiteSetting, log_action
+from authentication.models import Profile
 
 from .models import Deposit, Notification, NotificationDismissal, Plan, Transaction, Withdrawal
 
@@ -26,6 +27,8 @@ def plans(request):
 def dashboard(request):
     """User dashboard — includes admin notifications."""
     user = request.user
+    # Ensure profile always exists (auto-create if missing)
+    profile, _ = Profile.objects.get_or_create(user=user)
     approved_deposits = user.deposits.filter(status='approved')
     total_deposit = approved_deposits.aggregate(t=Sum('amount'))['t'] or 0
 
@@ -34,8 +37,8 @@ def dashboard(request):
     active_plans = Plan.objects.filter(id__in=active_plan_ids, is_active=True)
 
     # Referral balance from profile
-    referral_balance = getattr(user.profile, 'referral_balance', 0) or 0
-    referred_count = user.profile.referrals.count()
+    referral_balance = profile.referral_balance or 0
+    referred_count = profile.referrals.count()
 
     # Total balance = approved deposits + referral earnings
     balance = total_deposit + referral_balance
@@ -162,13 +165,19 @@ def history(request):
 @login_required
 def referrals(request):
     """Referrals page."""
-    return render(request, 'dashboard/referrals.html')
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    referred_users = Profile.objects.filter(referred_by=request.user).select_related('user')
+    return render(request, 'dashboard/referrals.html', {
+        'profile': profile,
+        'referred_users': referred_users,
+    })
 
 
 @login_required
 def settings_view(request):
     """Account settings."""
-    return render(request, 'dashboard/settings.html')
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    return render(request, 'dashboard/settings.html', {'profile': profile})
 
 
 @login_required

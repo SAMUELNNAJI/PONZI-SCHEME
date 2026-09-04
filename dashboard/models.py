@@ -13,12 +13,25 @@ class Plan(models.Model):
         ('hot', '🔥 Hot'),
         ('diamond', 'Diamond'),
         ('vip', 'VIP'),
-    ]
+        ]
 
     name = models.CharField(max_length=100)
     badge = models.CharField(max_length=20, choices=BADGES, default='basic')
     accent = models.BooleanField(
         default=False, help_text='Highlight the plan name in blue'
+    )
+    # --- Custom badge display (overridden on the card) ---
+    badge_text = models.CharField(
+        max_length=40, blank=True,
+        help_text='Custom badge label, e.g. "Best Value". Leave blank to use the default badge.',
+    )
+    badge_gradient_from = models.CharField(
+        max_length=7, default='#FF6B6B',
+        help_text='Hex color for the badge gradient start, e.g. #FF6B6B',
+    )
+    badge_gradient_to = models.CharField(
+        max_length=7, default='#F7971E',
+        help_text='Hex color for the badge gradient end, e.g. #F7971E',
     )
     daily_percent = models.DecimalField(max_digits=5, decimal_places=2, default=3)
     duration_days = models.PositiveIntegerField(default=30)
@@ -59,12 +72,25 @@ class Deposit(models.Model):
     )
     plan = models.ForeignKey(
         Plan, on_delete=models.SET_NULL, null=True, blank=True, related_name='deposits'
-    )
+        )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     method = models.CharField(max_length=10, choices=METHODS, default='bank')
     status = models.CharField(max_length=10, choices=STATUS, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
+    # --- Paystack integration ---
+    paystack_ref = models.CharField(
+        max_length=191, blank=True,
+        help_text='Paystack transaction reference (for verification).',
+    )
+    verified = models.BooleanField(
+        default=False,
+        help_text='Set True after Paystack callback verifies the payment.',
+    )
+    admin_confirmed = models.BooleanField(
+        default=False,
+        help_text='Set True manually if you credit the wallet by hand (dev fallback).',
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -97,7 +123,12 @@ class Withdrawal(models.Model):
     usdt_address = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=10, choices=STATUS, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    requested_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text='When the user submitted the request (for once-per-day limit).',
+    )
     reviewed_at = models.DateTimeField(null=True, blank=True)
+    paid = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']
@@ -112,6 +143,7 @@ class Transaction(models.Model):
     TYPES = [
         ('deposit', 'Deposit'),
         ('withdrawal', 'Withdrawal'),
+        ('referral', 'Referral Credit'),
     ]
 
     user = models.ForeignKey(
@@ -136,12 +168,16 @@ class Transaction(models.Model):
 
 
 class Notification(models.Model):
-    """Admin-created announcement shown on every user's dashboard."""
+    """Admin-created announcement shown on every user dashboard."""
 
     title = models.CharField(max_length=120)
     body = models.TextField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    email_sent = models.BooleanField(
+        default=False,
+        help_text='Mark True after emailing the notification to all users.',
+    )
 
     class Meta:
         ordering = ['-created_at']

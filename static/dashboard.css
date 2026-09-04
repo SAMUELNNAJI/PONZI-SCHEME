@@ -1642,3 +1642,16 @@ body {
   .admin-form-grid { grid-template-columns: 1fr; }
 }
 
+
+/* Custom plan badge (admin-defined) */
+.plan-tag.custom {
+  background: linear-gradient(135deg, #FF6B6B, #F7971E);
+  color: #fff;
+  font-weight: 700;
+}
+
+.field-hint {
+  font-weight: 400;
+  font-size: 0.8em;
+  color: #888;
+}

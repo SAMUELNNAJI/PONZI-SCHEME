@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,3 +140,19 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# ── Payment gateway (Paystack) ─────────────────────────────────────────
+# Set these in your environment (or a .env equivalent) before going live.
+PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
+PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
+# Base URL of this site used to build the Paystack callback URL.
+PAYSTACK_CALLBACK_BASE = os.environ.get('PAYSTACK_CALLBACK_BASE', 'http://127.0.0.1:8000')
+
+# ── Email (ZeptoMail) ──────────────────────────────────────────────────
+# ZeptoMail uses OAuth2 client credentials flow.
+ZEPTOMAIL_CLIENT_ID = os.environ.get('ZEPTOMAIL_CLIENT_ID', '')
+ZEPTOMAIL_CLIENT_SECRET = os.environ.get('ZEPTOMAIL_CLIENT_SECRET', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@premiumwallet.com')
+
+# Public URL used for links inside emails (e.g. password reset).
+SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')

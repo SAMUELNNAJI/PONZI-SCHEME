@@ -119,6 +119,9 @@ def plan_form(request, pk=None):
             plan.price = price
             plan.is_active = request.POST.get('is_active') == 'on'
             plan.sort_order = int(request.POST.get('sort_order') or 0)
+            plan.badge_text = request.POST.get('badge_text', '').strip()
+            plan.badge_gradient_from = request.POST.get('badge_gradient_from', '#FF6B6B') or '#FF6B6B'
+            plan.badge_gradient_to = request.POST.get('badge_gradient_to', '#F7971E') or '#F7971E'
             plan.save()
             return redirect('adminpanel:plans')
 
@@ -127,9 +130,6 @@ def plan_form(request, pk=None):
         'error': error,
         'badges': Plan.BADGES,
     })
-
-# ── 3. Deposits ─────────────────────────────────────────────────────────
-@admin_required
 def deposits(request):
     if request.method == 'POST':
         dep = get_object_or_404(Deposit, pk=request.POST.get('pk'))
@@ -230,4 +230,3 @@ def logs(request):
     return render(request, 'adminpanel/logs.html', {
         'logs_list': ActivityLog.objects.all()[:200],
     })
-

@@ -30,6 +30,18 @@
         </select>
       </div>
       <div class="form-group">
+        <label for="id_badge_text">Custom badge text <span class="field-hint">(overrides default badge label)</span></label>
+        <input class="form-input" id="id_badge_text" name="badge_text" value="{{ plan.badge_text|default:'' }}" placeholder="e.g. Best Value" />
+      </div>
+      <div class="form-group">
+        <label for="id_badge_gradient_from">Badge gradient start</label>
+        <input class="form-input" id="id_badge_gradient_from" name="badge_gradient_from" type="color" value="{{ plan.badge_gradient_from|default:'#FF6B6B' }}" />
+      </div>
+      <div class="form-group">
+        <label for="id_badge_gradient_to">Badge gradient end</label>
+        <input class="form-input" id="id_badge_gradient_to" name="badge_gradient_to" type="color" value="{{ plan.badge_gradient_to|default:'#F7971E' }}" />
+      </div>
+      <div class="form-group">
         <label for="id_percent">Daily percent (%)</label>
         <input class="form-input" id="id_percent" name="daily_percent" type="number" step="0.01" min="0.01" value="{{ plan.daily_percent|default:'3' }}" required />
       </div>

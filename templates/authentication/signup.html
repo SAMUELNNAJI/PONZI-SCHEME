@@ -32,9 +32,10 @@
     </div>
 
     <!-- Form -->
-    <form class="auth-form" method="post">
+        <form class="auth-form" method="post">
       {% csrf_token %}
       {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+      {% if ref_code %}<input type="hidden" name="ref_code" value="{{ ref_code }}" />{% endif %}
       <div class="name-row">
         <input
           class="auth-input"

@@ -91,7 +91,11 @@
       <div class="dash-plans-grid">
         {% for plan in plans %}
         <div class="dash-plan-card">
+          {% if plan.badge_text %}
+          <div class="plan-tag custom" style="background: linear-gradient(135deg, {{ plan.badge_gradient_from }}, {{ plan.badge_gradient_to }});">{{ plan.badge_text }}</div>
+          {% else %}
           <div class="plan-tag {{ plan.badge }}">{{ plan.get_badge_display }}</div>
+          {% endif %}
           <div class="dash-plan-name{% if plan.accent %} accent{% endif %}">{{ plan.name }}</div>
           <div class="dash-plan-pct">{{ plan.daily_percent|floatformat:"0" }}%</div>
           <div class="dash-plan-days">daily for {{ plan.duration_days }} days</div>

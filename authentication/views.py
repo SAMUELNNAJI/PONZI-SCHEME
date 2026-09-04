@@ -22,7 +22,7 @@ def _safe_redirect(request):
     ):
         return redirect(next_url)
     if request.user.is_staff:
-        return redirect('adminpanel:index')
+        return redirect('adminpanel:users')
     return redirect('dashboard:dashboard_page')
 
 

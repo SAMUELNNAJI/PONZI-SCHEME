@@ -14,6 +14,10 @@ import os
 from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,12 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-jype7h1_jpzysjqq0riz7=(8d4uk=(mpgchpef+j_$777aa7bm'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-jype7h1_jpzysjqq0riz7=(8d4uk=(mpgchpef+j_$777aa7bm')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -142,17 +146,22 @@ MAILERS = {
 }
 
 # ── Payment gateway (Paystack) ─────────────────────────────────────────
-# Set these in your environment (or a .env equivalent) before going live.
+# Get your keys from https://dashboard.paystack.com/#/settings/developer
 PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
 PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
+PAYSTACK_MODE = os.environ.get('PAYSTACK_MODE', 'test')
 # Base URL of this site used to build the Paystack callback URL.
-PAYSTACK_CALLBACK_BASE = os.environ.get('PAYSTACK_CALLBACK_BASE', 'http://127.0.0.1:8000')
+SITE_BASE_URL = os.environ.get('SITE_BASE_URL', 'http://127.0.0.1:8000')
+
+# ── Referral Settings ─────────────────────────────────────────────────
+REFERRAL_PERCENT = int(os.environ.get('REFERRAL_PERCENT', '10'))
 
 # ── Email (ZeptoMail) ──────────────────────────────────────────────────
 # ZeptoMail uses OAuth2 client credentials flow.
+# Get credentials from https://zeptomail.zoho.com/
 ZEPTOMAIL_CLIENT_ID = os.environ.get('ZEPTOMAIL_CLIENT_ID', '')
 ZEPTOMAIL_CLIENT_SECRET = os.environ.get('ZEPTOMAIL_CLIENT_SECRET', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@premiumwallet.com')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@yourdomain.com')
 
 # Public URL used for links inside emails (e.g. password reset).
 SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')

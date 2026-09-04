@@ -41,3 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
+/* ── Toggle password visibility ── */
+function togglePassword(btn) {
+  const wrapper = btn.parentElement;
+  const input = wrapper.querySelector('input');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}

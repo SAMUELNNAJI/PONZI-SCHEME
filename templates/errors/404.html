@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page not found – Premium Wallet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'auth.css' %}" />
+  <style>
+    .error-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .error-code {
+      font-size: 120px;
+      font-weight: 800;
+      color: #1a56db;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .error-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 12px;
+    }
+    .error-message {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 30px;
+      max-width: 400px;
+    }
+    .error-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-page">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page not found</h1>
+    <p class="error-message">The page you're looking for doesn't exist or has been moved.</p>
+    <div class="error-links">
+      <a href="/" class="btn-auth-submit" style="text-decoration:none; display:inline-block;">Go home</a>
+      <a href="/dashboard.html" class="btn-auth-submit" style="text-decoration:none; display:inline-block; background:#666;">Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

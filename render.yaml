@@ -38,6 +38,12 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         sync: false
+      - key: SUPERUSER_USERNAME
+        value: "admin"
+      - key: SUPERUSER_EMAIL
+        sync: false
+      - key: SUPERUSER_PASSWORD
+        sync: false
 
 databases:
   - name: ponzi-db

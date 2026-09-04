@@ -132,7 +132,7 @@
   </script>
   <!-- ── MOBILE BOTTOM NAV ── -->
   <nav class="bottom-nav">
-    <a href="dashboard.html" class="bottom-nav-item">
+    <a href="{% url 'dashboard:dashboard_page' %}" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1"/>
         <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -141,14 +141,14 @@
       </svg>
       <span>Home</span>
     </a>
-    <a href="plans.html" class="bottom-nav-item">
+    <a href="{% url 'dashboard:plans' %}" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
         <polyline points="16 7 22 7 22 13"/>
       </svg>
       <span>Plans</span>
     </a>
-    <a href="deposit.html" class="bottom-nav-item">
+    <a href="{% url 'dashboard:deposit' %}" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 17V3"/>
         <path d="M6 11l6 6 6-6"/>
@@ -156,7 +156,7 @@
       </svg>
       <span>Deposit</span>
     </a>
-    <a href="withdraw.html" class="bottom-nav-item">
+    <a href="{% url 'dashboard:withdraw' %}" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 7v14"/>
         <path d="M6 13l6-6 6 6"/>
@@ -164,7 +164,7 @@
       </svg>
       <span>Withdraw</span>
     </a>
-    <a href="history.html" class="bottom-nav-item">
+    <a href="{% url 'dashboard:history' %}" class="bottom-nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/>
         <line x1="12" y1="7" x2="12" y2="17"/>
@@ -172,6 +172,15 @@
       </svg>
       <span>History</span>
     </a>
+    {% if user.is_staff %}
+    <a href="/adminpanel/" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      <span>Admin</span>
+    </a>
+    {% endif %}
   </nav>
 
 </body>

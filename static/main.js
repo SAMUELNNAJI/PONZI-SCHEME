@@ -55,7 +55,7 @@ function togglePassword(btn) {
   }
 }
 
-/* ── Copy referral link ── */
+/* ── Copy referral link (legacy) ── */
 function copyReferralLink() {
   const link = document.getElementById('referralLink').textContent;
   navigator.clipboard.writeText(link).then(() => {
@@ -63,4 +63,45 @@ function copyReferralLink() {
     copyText.textContent = 'Copied!';
     setTimeout(() => { copyText.textContent = 'Copy'; }, 2000);
   });
+}
+
+/* ── Generic clipboard copy (used by referral card) ── */
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
+}
+
+/* ── Copy text from a span by ID ── */
+function copySpan(spanId, btn) {
+  const el = document.getElementById(spanId);
+  if (!el) return;
+  const text = el.textContent.trim();
+
+  // Update button text immediately — don't wait for async clipboard
+  btn.textContent = 'Copied!';
+  setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+
+  // Attempt clipboard write (best-effort)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '0';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
 }

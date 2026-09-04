@@ -102,6 +102,8 @@ def deposit(request):
 
         if amount < float(site.min_deposit):
             error = f'Minimum deposit is ₦{site.min_deposit:,.0f}.'
+        elif not plan_id:
+            error = 'Please select a plan before proceeding.'
         elif method not in ('bank', 'usdt'):
             error = 'Choose a valid payment method.'
         else:

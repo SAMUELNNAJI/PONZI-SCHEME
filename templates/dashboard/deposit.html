@@ -89,19 +89,19 @@
 
         <div class="form-group">
           <label for="dep-plan">Select plan</label>
-          <select class="form-select" id="dep-plan">
-            <option value="">Select a plan</option>
+          <select class="form-select" id="dep-plan" name="plan" onchange="onPlanChange(this)">
+            <option value="" data-price="">— Choose a plan first —</option>
             {% for plan in plans %}
-            <option value="{{ plan.id }}">{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
+            <option value="{{ plan.id }}" data-price="{{ plan.price }}">{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
             {% endfor %}
           </select>
         </div>
 
         <div class="notice-box">
-          Minimum deposit is ₦7,000. After submitting, you will receive payment instructions. Your investment activates once payment is confirmed.
+          Select a plan above — the required amount will be filled in automatically. After submitting you will receive payment instructions, and your investment activates once payment is confirmed.
         </div>
 
-        <button class="btn-primary" type="submit">
+        <button class="btn-primary" type="submit" id="dep-submit" disabled style="opacity:0.5;cursor:not-allowed;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
           Proceed to Deposit
         </button>
@@ -198,6 +198,33 @@
       document.getElementById('dep-amount').value = amt;
       document.querySelectorAll('.dep-chip').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
+    }
+    function onPlanChange(select) {
+      const chosen = select.options[select.selectedIndex];
+      const price  = chosen.dataset.price;
+      const amtInput  = document.getElementById('dep-amount');
+      const submitBtn = document.getElementById('dep-submit');
+
+      if (price) {
+        // Fill amount with the plan price and lock the field
+        amtInput.value    = price;
+        amtInput.readOnly = true;
+        amtInput.style.background = '#f0f2f9';
+        // Clear quick-chip active state
+        document.querySelectorAll('.dep-chip').forEach(c => c.classList.remove('active'));
+        // Enable submit
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor  = 'pointer';
+      } else {
+        // No plan selected — clear and disable
+        amtInput.value    = '';
+        amtInput.readOnly = false;
+        amtInput.style.background = '';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor  = 'not-allowed';
+      }
     }
   </script>
 

@@ -209,15 +209,37 @@
 
       </div>
 
-      <!-- View referrals button -->
-      <a href="referrals.html" class="view-referrals-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        View referrals
+      <!-- Referral card -->
+      <div class="referral-card">
+        <div class="referral-card-header">
+          <div class="referral-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="referral-card-title">Refer &amp; Earn</div>
+          <a href="referrals.html" class="referral-card-view">View referrals →</a>
+        </div>
+        <div class="referral-card-body">
+          <p class="referral-card-desc">Share your link and earn 10% commission on every deposit from your referrals.</p>
+          <div class="referral-link-row">
+            <span class="referral-link" id="referralLink">{{ referral_link }}</span>
+            <button class="referral-copy-btn" onclick="copyReferralLink()" id="copyBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span id="copyText">Copy</span>
+            </button>
+          </div>
+          <div class="referral-code-row">
+            <span class="referral-code-label">Your code:</span>
+            <span class="referral-code">{{ referral_code }}</span>
+          </div>
+        </div>
       </a>
 
       <!-- Action buttons -->

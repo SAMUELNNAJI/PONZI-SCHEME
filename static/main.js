@@ -54,3 +54,13 @@ function togglePassword(btn) {
     btn.textContent = '👁';
   }
 }
+
+/* ── Copy referral link ── */
+function copyReferralLink() {
+  const link = document.getElementById('referralLink').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    const copyText = document.getElementById('copyText');
+    copyText.textContent = 'Copied!';
+    setTimeout(() => { copyText.textContent = 'Copy'; }, 2000);
+  });
+}

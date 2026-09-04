@@ -62,6 +62,11 @@ def dashboard(request):
         id__in=dismissed_ids
     )
 
+    # Build referral link
+    from django.conf import settings
+    base_url = getattr(settings, 'SITE_BASE_URL', 'http://127.0.0.1:8000')
+    referral_link = f'{base_url}/signup.html?ref={profile.referral_code}'
+
     context = {
         'stats': {
             'balance': balance,
@@ -74,6 +79,8 @@ def dashboard(request):
         'active_plans_list': active_plans,
         'notifications': active_notifications[:5],
         'latest_notification': active_notifications.first(),
+        'referral_link': referral_link,
+        'referral_code': profile.referral_code,
     }
     return render(request, 'dashboard/dashboard.html', context)
 

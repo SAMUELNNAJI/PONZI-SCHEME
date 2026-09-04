@@ -1,0 +1,125 @@
+/* ── Referral card (dashboard home) ── */
+.referral-card {
+  background: linear-gradient(135deg, #1a3fd4 0%, #1535b8 60%, #1230a0 100%);
+  border-radius: 18px;
+  padding: 24px;
+  color: #fff;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.referral-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+.referral-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.referral-card-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.referral-card-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: #fff;
+}
+.referral-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  flex: 1;
+}
+.referral-card-view {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  background: rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+.referral-card-view:hover {
+  background: rgba(255,255,255,0.2);
+}
+.referral-card-body {
+  position: relative;
+  z-index: 1;
+}
+.referral-card-desc {
+  font-size: 14px;
+  opacity: 0.85;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+.referral-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+.referral-link {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.referral-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.referral-copy-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+.referral-copy-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: #fff;
+}
+.referral-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.referral-code-label {
+  opacity: 0.7;
+}
+.referral-code {
+  font-family: monospace;
+  font-weight: 700;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 10px;
+  border-radius: 6px;
+}

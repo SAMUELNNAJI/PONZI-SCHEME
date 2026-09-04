@@ -35,4 +35,10 @@ urlpatterns = [
 
     # AJAX: dismiss a notification so it never shows again for this user
     path('api/notification/dismiss', views.dismiss_notification, name='dismiss_notification'),
+
+    # Legal pages
+    path('terms.html', views.terms, name='terms'),
+    path('terms', views.terms, name='terms_clean'),
+    path('privacy.html', views.privacy, name='privacy'),
+    path('privacy', views.privacy, name='privacy_clean'),
 ]

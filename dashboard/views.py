@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -13,6 +14,16 @@ from .models import Deposit, Notification, NotificationDismissal, Plan, Transact
 def index(request):
     """Landing page (public)."""
     return render(request, 'dashboard/index.html')
+
+
+def terms(request):
+    """Terms of Service page (public)."""
+    return render(request, 'dashboard/terms.html')
+
+
+def privacy(request):
+    """Privacy Policy page (public)."""
+    return render(request, 'dashboard/privacy.html')
 
 
 @login_required
@@ -38,7 +49,7 @@ def dashboard(request):
 
     # Referral balance from profile
     referral_balance = profile.referral_balance or 0
-    referred_count = profile.referrals.count()
+    referred_count = User.objects.filter(profile__referred_by=user).count()
 
     # Total balance = approved deposits + referral earnings
     balance = total_deposit + referral_balance

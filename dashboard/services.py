@@ -3,11 +3,16 @@ from decimal import Decimal
 import hashlib
 import hmac
 import logging
+import ssl
 import urllib.error
 import urllib.request
 import json
 from django.conf import settings
 from django.utils import timezone
+
+# A single reusable SSL context — fixes DNS/SSL failures on Windows where
+# urllib's default context path can fail even when the host is reachable.
+_SSL_CTX = ssl.create_default_context()
 
 from dashboard.models import Deposit, Withdrawal, Transaction
 from authentication.models import Profile
@@ -200,7 +205,7 @@ def send_email(to_email, subject, body_html, name=''):
         },
     )
     try:
-        urllib.request.urlopen(req, timeout=15)
+        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
         return True
     except (urllib.error.URLError, urllib.error.HTTPError) as e:
         print(f"[email-error] {to_email} | {subject} | {e}")
@@ -221,7 +226,7 @@ def _get_zm_token():
         headers={"Content-Type": "application/json"},
     )
     try:
-        resp = urllib.request.urlopen(req, timeout=15)
+        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
         return json.loads(resp.read())["access_token"]
     except Exception as e:
         print(f"[zm-token-error] {e}")
@@ -289,7 +294,7 @@ def initialize_paystack_transaction(email, amount, callback_url, reference):
         headers=_paystack_headers(),
     )
     try:
-        resp = urllib.request.urlopen(req, timeout=15)
+        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
         data = json.loads(resp.read())
         if data.get('status'):
             return data['data'].get('authorization_url'), data['data'].get('reference')
@@ -323,7 +328,7 @@ def verify_paystack_transaction(reference):
         headers=_paystack_headers(),
     )
     try:
-        resp = urllib.request.urlopen(req, timeout=15)
+        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
         data = json.loads(resp.read())
         if data.get('status'):
             return data['data']

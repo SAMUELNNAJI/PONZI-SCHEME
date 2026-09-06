@@ -21,9 +21,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: ponzi-db
-          property: connectionString
+        value: "postgresql://neondb_owner:npg_5jGUkNHwyVv6@ep-sparkling-unit-b1oebeqy-pooler.c-5.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
       - key: PAYSTACK_PUBLIC_KEY
         sync: false
       - key: PAYSTACK_SECRET_KEY
@@ -44,9 +42,3 @@ services:
         sync: false
       - key: SUPERUSER_PASSWORD
         sync: false
-
-databases:
-  - name: ponzi-db
-    databaseName: ponzi
-    user: ponzi
-    plan: free

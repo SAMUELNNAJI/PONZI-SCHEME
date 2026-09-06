@@ -78,11 +78,18 @@ def dashboard(request):
             / Decimal('100')
         )
 
-    # Total ROI earned so far, accruing at the upgraded plan's daily rate
+    # Total ROI earned so far, accruing at the upgraded plan's daily rate.
+    # We count *calendar days elapsed* in Nigeria local time so that ROI
+    # increments at midnight Lagos time, not every 24 rolling hours.
     total_roi_earned = Decimal('0')
     if latest_deposit:
         started_at = latest_deposit.reviewed_at or latest_deposit.created_at
-        days = max(1, (timezone.now() - started_at).days)
+        # Convert both timestamps to local (Nigeria) date then diff by date
+        local_start = timezone.localtime(started_at).date()
+        local_today = timezone.localdate()
+        days_elapsed = (local_today - local_start).days
+        # Day 1 = the approval day itself; each midnight adds one more day
+        days = max(1, days_elapsed + 1)
         total_roi_earned = daily_roi * days
 
     # Referral earnings (accumulated on the profile)

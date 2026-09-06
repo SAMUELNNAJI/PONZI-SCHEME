@@ -70,7 +70,12 @@ def get_available_balance(user):
             latest.amount * Decimal(str(latest.plan.daily_percent)) / Decimal('100')
         )
         started_at = latest.reviewed_at or latest.created_at
-        days = max(1, (timezone.now() - started_at).days)
+        # Count calendar days elapsed in Nigeria local time so ROI increments
+        # at midnight Lagos time, not every rolling 24 hours.
+        local_start = timezone.localtime(started_at).date()
+        local_today = timezone.localdate()
+        days_elapsed = (local_today - local_start).days
+        days = max(1, days_elapsed + 1)
         total_roi_earned = daily * days
 
     try:

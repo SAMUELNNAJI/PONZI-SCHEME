@@ -119,9 +119,10 @@ def dashboard(request):
     ).values_list('notification_id', flat=True)
     undismissed_notifications = all_notifications.exclude(id__in=dismissed_ids)
 
-    # Build referral link
-    base_url = getattr(settings, 'SITE_BASE_URL', 'http://127.0.0.1:8000')
-    referral_link = f'{base_url}/signup.html?ref={profile.referral_code}'
+    # Build referral link from the live request — always correct on any domain
+    referral_link = request.build_absolute_uri(
+        f'/signup.html?ref={profile.referral_code}'
+    )
 
     context = {
         'stats': {
@@ -446,9 +447,10 @@ def referrals(request):
 
     total_earnings = profile.referral_balance or 0
 
-    from django.conf import settings as django_settings
-    base_url = getattr(django_settings, 'SITE_BASE_URL', 'http://127.0.0.1:8000')
-    referral_link = f'{base_url}/signup.html?ref={profile.referral_code}'
+    # Build referral link from the live request — always correct on any domain
+    referral_link = request.build_absolute_uri(
+        f'/signup.html?ref={profile.referral_code}'
+    )
 
     return render(request, 'dashboard/referrals.html', {
         'profile': profile,

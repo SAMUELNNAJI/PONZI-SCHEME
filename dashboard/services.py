@@ -2,6 +2,7 @@
 from decimal import Decimal
 import hashlib
 import hmac
+import logging
 import urllib.error
 import urllib.request
 import json
@@ -10,6 +11,8 @@ from django.utils import timezone
 
 from dashboard.models import Deposit, Withdrawal, Transaction
 from authentication.models import Profile
+
+logger = logging.getLogger(__name__)
 
 MIN_WITHDRAWAL = Decimal('5000.00')
 REFERRAL_COMMISSION_RATE = Decimal('10')  # 10% of deposit goes to referrer
@@ -246,11 +249,18 @@ def notify_users(notification):
 # Paystack payment gateway
 # ---------------------------------------------------------------------------
 def _paystack_headers():
-    """Return auth headers for Paystack API requests."""
+    """Return auth headers for Paystack API requests.
+
+    A ``User-Agent`` is REQUIRED: Paystack sits behind Cloudflare, which
+    blocks requests signed by Python's default ``Python-urllib/x`` agent
+    with HTTP 403 / Cloudflare error 1010 ("browser signature banned").
+    """
     secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
     return {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {secret}',
+        'User-Agent': 'Mozilla/5.0 (compatible; PaystackClient/1.0)',
+        'Accept': 'application/json',
     }
 
 
@@ -283,10 +293,18 @@ def initialize_paystack_transaction(email, amount, callback_url, reference):
         data = json.loads(resp.read())
         if data.get('status'):
             return data['data'].get('authorization_url'), data['data'].get('reference')
-        print(f"[paystack-init] API error: {data.get('message')}")
+        logger.error(f'[paystack-init] API error: {data.get("message")}')
+        return None, None
+    except urllib.error.HTTPError as e:
+        body = ''
+        try:
+            body = e.read().decode('utf-8', 'replace')[:300]
+        except Exception:
+            pass
+        logger.error(f'[paystack-init] HTTP {e.code} from Paystack: {body}')
         return None, None
     except Exception as e:
-        print(f'[paystack-init-error] {e}')
+        logger.error(f'[paystack-init-error] {type(e).__name__}: {e}')
         return None, None
 
 
@@ -309,9 +327,18 @@ def verify_paystack_transaction(reference):
         data = json.loads(resp.read())
         if data.get('status'):
             return data['data']
+        logger.error(f'[paystack-verify] API error: {data.get("message")}')
+        return None
+    except urllib.error.HTTPError as e:
+        body = ''
+        try:
+            body = e.read().decode('utf-8', 'replace')[:300]
+        except Exception:
+            pass
+        logger.error(f'[paystack-verify] HTTP {e.code} from Paystack: {body}')
         return None
     except Exception as e:
-        print(f'[paystack-verify-error] {e}')
+        logger.error(f'[paystack-verify-error] {type(e).__name__}: {e}')
         return None
 
 

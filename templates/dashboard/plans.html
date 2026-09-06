@@ -103,8 +103,8 @@
           <div class="dash-plan-range">Plan price: ₦{{ plan.price|floatformat:"0"|intcomma }}</div>
           <div class="dash-plan-total">Daily ₦{{ plan.daily_profit|floatformat:"0"|intcomma }} · Total ₦{{ plan.total_payout|floatformat:"0"|intcomma }}</div>
           <div class="dash-plan-actions">
-            <a href="deposit.html" class="btn-plan-invest">Invest now</a>
-            <a href="deposit.html" class="btn-plan-upgrade">Upgrade</a>
+            <a href="deposit.html?plan={{ plan.id }}" class="btn-plan-invest">Invest now</a>
+            <a href="deposit.html?plan={{ plan.id }}" class="btn-plan-upgrade">Upgrade</a>
           </div>
         </div>
         {% endfor %}

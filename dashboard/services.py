@@ -1,5 +1,7 @@
 """Shared business logic: wallet credits, referral rewards, emails, admin payouts."""
 from decimal import Decimal
+import hashlib
+import hmac
 import urllib.error
 import urllib.request
 import json
@@ -34,6 +36,44 @@ def get_wallet_balance(user):
         total=Sum('amount')
     )['total'] or Decimal('0')
     return pos - neg
+
+
+def get_available_balance(user):
+    """Available balance = total daily ROI earned + referral earnings − withdrawals.
+
+    Daily ROI accrues on the *latest approved* (upgraded) plan and deposit.
+    Both pending and approved withdrawals reduce the available balance as soon
+    as a withdrawal request is made.
+    """
+    from django.db.models import Sum
+
+    deposits = list(
+        Deposit.objects.filter(user=user, status='approved')
+        .select_related('plan')
+        .filter(plan__isnull=False)
+    )
+    latest = deposits[0] if deposits else None
+
+    total_roi_earned = Decimal('0')
+    if latest:
+        daily = (
+            latest.amount * Decimal(str(latest.plan.daily_percent)) / Decimal('100')
+        )
+        started_at = latest.reviewed_at or latest.created_at
+        days = max(1, (timezone.now() - started_at).days)
+        total_roi_earned = daily * days
+
+    try:
+        referral = user.profile.referral_balance or Decimal('0')
+    except Profile.DoesNotExist:
+        referral = Decimal('0')
+
+    withdrawn = Withdrawal.objects.filter(
+        user=user, status__in=['pending', 'approved'],
+    ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+
+    available = total_roi_earned + Decimal(str(referral)) - withdrawn
+    return available if available > 0 else Decimal('0')
 
 
 def credit_wallet(deposit):
@@ -200,3 +240,104 @@ def notify_users(notification):
         notification.email_sent = True
         notification.save(update_fields=['email_sent'])
     return sent
+
+
+# ---------------------------------------------------------------------------
+# Paystack payment gateway
+# ---------------------------------------------------------------------------
+def _paystack_headers():
+    """Return auth headers for Paystack API requests."""
+    secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {secret}',
+    }
+
+
+def initialize_paystack_transaction(email, amount, callback_url, reference):
+    """Initialize a Paystack transaction.
+
+    Returns ``(authorization_url, reference)`` on success, ``(None, None)``
+    on failure.  *amount* is in NGN and is converted to kobo (×100) for
+    the Paystack API.
+    """
+    if not settings.PAYSTACK_SECRET_KEY:
+        print('[paystack] PAYSTACK_SECRET_KEY is not set — skipping init')
+        return None, None
+
+    payload = json.dumps({
+        'email': email,
+        'amount': int(amount * 100),          # NGN → kobo
+        'reference': reference,
+        'callback_url': callback_url,
+        'currency': 'NGN',
+    })
+    req = urllib.request.Request(
+        'https://api.paystack.co/transaction/initialize',
+        data=payload.encode('utf-8'),
+        method='POST',
+        headers=_paystack_headers(),
+    )
+    try:
+        resp = urllib.request.urlopen(req, timeout=15)
+        data = json.loads(resp.read())
+        if data.get('status'):
+            return data['data'].get('authorization_url'), data['data'].get('reference')
+        print(f"[paystack-init] API error: {data.get('message')}")
+        return None, None
+    except Exception as e:
+        print(f'[paystack-init-error] {e}')
+        return None, None
+
+
+def verify_paystack_transaction(reference):
+    """Verify a Paystack transaction by reference.
+
+    Returns the Paystack ``data`` dict on success (with ``status == 'success'``)
+    or ``None`` if verification fails.
+    """
+    if not settings.PAYSTACK_SECRET_KEY:
+        return None
+
+    req = urllib.request.Request(
+        f'https://api.paystack.co/transaction/verify/{reference}',
+        method='GET',
+        headers=_paystack_headers(),
+    )
+    try:
+        resp = urllib.request.urlopen(req, timeout=15)
+        data = json.loads(resp.read())
+        if data.get('status'):
+            return data['data']
+        return None
+    except Exception as e:
+        print(f'[paystack-verify-error] {e}')
+        return None
+
+
+def verify_paystack_webhook_signature(body, signature):
+    """Verify the ``x-paystack-signature`` header over the raw request body.
+
+    Paystack signs every webhook with HMAC-SHA512 using the secret key.  Returns
+    ``True`` only for a valid signature.  The *body* must be the raw, un-decoded
+    bytes so the hash matches what Paystack signed.
+    """
+    secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
+    if not secret or not signature:
+        return False
+    digest = hmac.new(
+        secret.encode('utf-8'), body, hashlib.sha512
+    ).hexdigest()
+    return hmac.compare_digest(digest, signature)
+
+
+def build_paystack_webhook_url():
+    """Absolute URL Paystack should POST webhook events to."""
+    base = getattr(settings, 'SITE_BASE_URL', '').rstrip('/')
+    return f'{base}/paystack/webhook'
+
+
+def build_paystack_callback_url():
+    """Absolute URL Paystack redirects the browser to after checkout."""
+    base = getattr(settings, 'SITE_BASE_URL', '').rstrip('/')
+    return f'{base}/paystack/callback'

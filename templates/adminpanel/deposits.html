@@ -7,37 +7,66 @@
 
 {% block content %}
 <h1 class="page-title">Deposits</h1>
-<p class="page-subtitle">{{ deposits_list|length }} deposit{{ deposits_list|length|pluralize }} — approve or reject pending requests.</p>
+<p class="page-subtitle">{{ total }} deposit{{ total|pluralize }} — confirmed automatically via Paystack.</p>
 
 <div class="dash-card">
   <table class="admin-table">
     <thead>
-      <tr><th>User</th><th>Amount</th><th>Method</th><th>Plan</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+      <tr>
+        <th>User</th><th>Amount</th><th>Method</th>
+        <th>Plan</th><th>Paystack Ref</th><th>Date</th><th>Status</th>
+      </tr>
     </thead>
     <tbody>
-      {% for d in deposits_list %}
+      {% for d in page_obj %}
       <tr>
         <td><strong>{{ d.user.username }}</strong></td>
         <td class="num">₦{{ d.amount|floatformat:"0"|intcomma }}</td>
         <td>{{ d.get_method_display }}</td>
         <td>{{ d.plan.name|default:"—" }}</td>
+        <td><span class="tx-date">{{ d.paystack_ref|default:"—" }}</span></td>
         <td>{{ d.created_at|date:"M d, Y H:i" }}</td>
         <td><span class="tx-status {{ d.status }}">{{ d.get_status_display }}</span></td>
-        <td>
-          {% if d.status == 'pending' %}
-          <form method="post" style="display:inline">
-            {% csrf_token %}
-            <input type="hidden" name="pk" value="{{ d.pk }}" />
-            <button class="btn-admin-sm green" name="action" value="approve">Approve</button>
-            <button class="btn-admin-sm red" name="action" value="reject">Reject</button>
-          </form>
-          {% else %}<span class="tx-date">reviewed {{ d.reviewed_at|date:"M d, H:i" }}</span>{% endif %}
-        </td>
       </tr>
       {% empty %}
-      <tr><td colspan="7">No deposits yet.</td></tr>
+      <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No deposits yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">&laquo; Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="page-btn">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
+
+<style>
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1rem .6rem;
+  border-top: 1px solid var(--border, rgba(255,255,255,.07));
+}
+.page-btn {
+  background: var(--card-bg, #1e293b);
+  color: var(--text-primary, #f1f5f9);
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  padding: .35rem .8rem;
+  border-radius: .4rem;
+  font-size: .8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s;
+}
+.page-btn:hover { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); }
+.page-info { font-size: .8rem; color: var(--text-muted, #94a3b8); margin-left: auto; }
+</style>
 {% endblock %}

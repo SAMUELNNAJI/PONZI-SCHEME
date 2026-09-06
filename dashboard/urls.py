@@ -36,6 +36,10 @@ urlpatterns = [
     # AJAX: dismiss a notification so it never shows again for this user
     path('api/notification/dismiss', views.dismiss_notification, name='dismiss_notification'),
 
+    # Paystack payment callback + server-to-server webhook
+    path('paystack/callback', views.paystack_callback, name='paystack_callback'),
+    path('paystack/webhook', views.paystack_webhook, name='paystack_webhook'),
+
     # Legal pages
     path('terms.html', views.terms, name='terms'),
     path('terms', views.terms, name='terms_clean'),

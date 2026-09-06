@@ -46,8 +46,19 @@
       <h1 class="page-title">Withdraw Funds</h1>
       <p class="page-subtitle">Request a withdrawal to your bank account or USDT TRC20 wallet.</p>
 
+      {% if submitted %}
+      <div class="notice-box success">✅ Withdrawal request submitted! The admin will review and process it within 24 hours.</div>
+      {% endif %}
+      {% if error %}
+      <div class="notice-box error">⚠️ {{ error }}</div>
+      {% endif %}
+
+      <div class="notice-box" style="margin-bottom: 12px;">
+        <strong>Available balance:</strong> ₦{{ available_balance|floatformat:2 }} — this amount is reduced immediately when you request a withdrawal.
+      </div>
+
       <div class="notice-box warning">
-        ⚠️ Withdrawals are processed within 24 hours. Double-check your account details before requesting.
+        ⚠️ Minimum withdrawal is ₦{{ min_withdraw|floatformat:"0" }}. Withdrawals are processed within 24 hours. Double-check your account details before requesting.
       </div>
 
       <div class="dash-card dep-card">
@@ -74,10 +85,10 @@
         </div>
 
         <div class="form-group">
-          <label for="wd-amount">Amount (₦) — min ₦5,000</label>
+          <label for="wd-amount">Amount (₦) — min ₦{{ min_withdraw|floatformat:"0" }}</label>
           <div class="dep-amount-wrap">
             <span class="dep-prefix">₦</span>
-            <input class="form-input" type="number" id="wd-amount" name="amount" placeholder="e.g. 5000" min="5000" />
+            <input class="form-input" type="number" id="wd-amount" name="amount" placeholder="e.g. {{ min_withdraw|floatformat:'0' }}" min="{{ min_withdraw }}" />
           </div>
           <div class="dep-chips">
             <button type="button" class="dep-chip" onclick="setWAmount(this, 5000)">₦5,000</button>

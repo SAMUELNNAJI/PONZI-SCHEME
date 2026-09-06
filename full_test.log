@@ -1,0 +1,13 @@
+Creating test database for alias 'default'...
+
+C:\Users\ADMIN\Desktop\PONZI\.venv\Lib\site-packages\django\core\handlers\base.py:63: UserWarning: No directory at: C:\Users\ADMIN\Desktop\PONZI\staticfiles\
+  mw_instance = middleware(adapted_handler)
+.....................
+----------------------------------------------------------------------
+Ran 21 tests in 56.019s
+
+OK
+Destroying test database for alias 'default'...
+
+Found 21 test(s).
+System check identified no issues (0 silenced).

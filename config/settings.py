@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Users sign in with their email (stored as the username).
 LOGIN_URL = '/login.html'
 LOGIN_REDIRECT_URL = '/dashboard.html'
-LOGOUT_REDIRECT_URL = '/index.html'
+LOGOUT_REDIRECT_URL = '/'
 
 
 # Database

@@ -7,22 +7,95 @@
 
 {% block content %}
 <h1 class="page-title">Withdrawals</h1>
-<p class="page-subtitle">{{ withdrawals_list|length }} withdrawal request{{ withdrawals_list|length|pluralize }}.</p>
+<p class="page-subtitle">{{ today_total }} today · {{ past_total }} previous</p>
 
-<div class="dash-card">
+{# ── helper macro for a withdrawal table ── #}
+{% with %}
+
+{# ── TODAY ── #}
+<h2 class="section-heading" style="margin-top:0">Today's Requests
+  <span class="section-count">{{ today_total }}</span>
+</h2>
+
+<div class="dash-card" style="margin-bottom:2rem">
   <table class="admin-table">
     <thead>
-      <tr><th>User</th><th>Amount</th><th>Method</th><th>Payout details</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+      <tr>
+        <th>User</th><th>Amount</th><th>Method</th>
+        <th>Payout details</th><th>Time</th><th>Status</th><th>Actions</th>
+      </tr>
     </thead>
     <tbody>
-      {% for w in withdrawals_list %}
+      {% for w in today_page %}
       <tr>
         <td><strong>{{ w.user.username }}</strong></td>
         <td class="num">₦{{ w.amount|floatformat:"0"|intcomma }}</td>
         <td>{{ w.get_method_display }}</td>
         <td>
           {% if w.method == 'bank' %}
-            {{ w.bank_name }} · {{ w.account_number }}<br><span class="tx-date">{{ w.account_name }}</span>
+            {{ w.bank_name }} · {{ w.account_number }}<br>
+            <span class="tx-date">{{ w.account_name }}</span>
+          {% else %}
+            <span class="tx-date">{{ w.usdt_address }}</span>
+          {% endif %}
+        </td>
+        <td>{{ w.created_at|date:"H:i" }}</td>
+        <td><span class="tx-status {{ w.status }}">{{ w.get_status_display }}</span></td>
+        <td>
+          {% if w.status == 'pending' %}
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ w.pk }}" />
+            <button class="btn-admin-sm green" name="action" value="approve">Approve</button>
+            <button class="btn-admin-sm red"   name="action" value="reject">Reject</button>
+          </form>
+          {% else %}
+          <span class="tx-date">reviewed {{ w.reviewed_at|date:"H:i" }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No withdrawal requests today.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if today_page.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if today_page.has_previous %}
+      <a href="?page_today={{ today_page.previous_page_number }}{% if past_page.number > 1 %}&page_past={{ past_page.number }}{% endif %}" class="page-btn">&laquo; Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ today_page.number }} of {{ today_page.paginator.num_pages }}</span>
+    {% if today_page.has_next %}
+      <a href="?page_today={{ today_page.next_page_number }}{% if past_page.number > 1 %}&page_past={{ past_page.number }}{% endif %}" class="page-btn">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{# ── PAST ── #}
+<h2 class="section-heading">Past Requests
+  <span class="section-count">{{ past_total }}</span>
+</h2>
+
+<div class="dash-card">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>User</th><th>Amount</th><th>Method</th>
+        <th>Payout details</th><th>Date</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in past_page %}
+      <tr>
+        <td><strong>{{ w.user.username }}</strong></td>
+        <td class="num">₦{{ w.amount|floatformat:"0"|intcomma }}</td>
+        <td>{{ w.get_method_display }}</td>
+        <td>
+          {% if w.method == 'bank' %}
+            {{ w.bank_name }} · {{ w.account_number }}<br>
+            <span class="tx-date">{{ w.account_name }}</span>
           {% else %}
             <span class="tx-date">{{ w.usdt_address }}</span>
           {% endif %}
@@ -35,15 +108,71 @@
             {% csrf_token %}
             <input type="hidden" name="pk" value="{{ w.pk }}" />
             <button class="btn-admin-sm green" name="action" value="approve">Approve</button>
-            <button class="btn-admin-sm red" name="action" value="reject">Reject</button>
+            <button class="btn-admin-sm red"   name="action" value="reject">Reject</button>
           </form>
-          {% else %}<span class="tx-date">reviewed {{ w.reviewed_at|date:"M d, H:i" }}</span>{% endif %}
+          {% else %}
+          <span class="tx-date">reviewed {{ w.reviewed_at|date:"M d, H:i" }}</span>
+          {% endif %}
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="7">No withdrawal requests yet.</td></tr>
+      <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No past withdrawal requests.</td></tr>
       {% endfor %}
     </tbody>
   </table>
+
+  {% if past_page.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if past_page.has_previous %}
+      <a href="?page_past={{ past_page.previous_page_number }}{% if today_page.number > 1 %}&page_today={{ today_page.number }}{% endif %}" class="page-btn">&laquo; Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ past_page.number }} of {{ past_page.paginator.num_pages }}</span>
+    {% if past_page.has_next %}
+      <a href="?page_past={{ past_page.next_page_number }}{% if today_page.number > 1 %}&page_today={{ today_page.number }}{% endif %}" class="page-btn">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
+
+{% endwith %}
+
+<style>
+.section-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary, #f1f5f9);
+  margin: 1.5rem 0 .75rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.section-count {
+  background: var(--accent, #6366f1);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: .15rem .55rem;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1rem .6rem;
+  border-top: 1px solid var(--border, rgba(255,255,255,.07));
+}
+.page-btn {
+  background: var(--card-bg, #1e293b);
+  color: var(--text-primary, #f1f5f9);
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  padding: .35rem .8rem;
+  border-radius: .4rem;
+  font-size: .8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s;
+}
+.page-btn:hover { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); }
+.page-info { font-size: .8rem; color: var(--text-muted, #94a3b8); margin-left: auto; }
+</style>
 {% endblock %}

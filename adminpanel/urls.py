@@ -16,5 +16,6 @@ urlpatterns = [
     path('transactions', views.transactions, name='transactions'),
     path('notify', views.notify, name='notify'),
     path('settings', views.settings_view, name='settings'),
+    path('payments', views.payments, name='payments'),
     path('logs', views.logs, name='logs'),
 ]

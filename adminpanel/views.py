@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
@@ -130,39 +131,62 @@ def plan_form(request, pk=None):
         'error': error,
         'badges': Plan.BADGES,
     })
+
+# ── 3. Deposits ─────────────────────────────────────────────────────────
+@admin_required
 def deposits(request):
-    if request.method == 'POST':
-        dep = get_object_or_404(Deposit, pk=request.POST.get('pk'))
-        action = request.POST.get('action')
-        if dep.status == 'pending' and action in ('approve', 'reject'):
-            dep.status = 'approved' if action == 'approve' else 'rejected'
-            dep.save()
-            dep.transactions.update(status=dep.status)
-            log_action(request.user, f'{dep.status.title()} deposit #{dep.id} '
-                                     f'(₦{dep.amount:,.0f}) by {dep.user.username}')
-        return redirect('adminpanel:deposits')
+    from django.core.paginator import Paginator
+
+    # Deposits are auto-confirmed by Paystack webhook — no manual approval needed.
+    all_deposits = Deposit.objects.select_related('user', 'plan').order_by('-created_at')
+    paginator = Paginator(all_deposits, 20)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
     return render(request, 'adminpanel/deposits.html', {
-        'deposits_list': Deposit.objects.select_related('user', 'plan'),
+        'page_obj': page_obj,
+        'total': all_deposits.count(),
     })
 
 
 # ── 4. Withdrawals ──────────────────────────────────────────────────────
 @admin_required
 def withdrawals(request):
+    from django.core.paginator import Paginator
+    from django.utils import timezone
+
     if request.method == 'POST':
         wd = get_object_or_404(Withdrawal, pk=request.POST.get('pk'))
         action = request.POST.get('action')
         if wd.status == 'pending' and action in ('approve', 'reject'):
             wd.status = 'approved' if action == 'approve' else 'rejected'
+            wd.reviewed_at = timezone.now()
             wd.save()
             wd.transactions.update(status=wd.status)
             log_action(request.user, f'{wd.status.title()} withdrawal #{wd.id} '
                                      f'(₦{wd.amount:,.0f}) by {wd.user.username}')
         return redirect('adminpanel:withdrawals')
 
+    today = timezone.localdate()
+
+    today_qs = Withdrawal.objects.select_related('user').filter(
+        created_at__date=today
+    ).order_by('-created_at')
+
+    past_qs = Withdrawal.objects.select_related('user').exclude(
+        created_at__date=today
+    ).order_by('-created_at')
+
+    today_paginator = Paginator(today_qs, 20)
+    past_paginator = Paginator(past_qs, 20)
+
+    today_page = today_paginator.get_page(request.GET.get('page_today'))
+    past_page = past_paginator.get_page(request.GET.get('page_past'))
+
     return render(request, 'adminpanel/withdrawals.html', {
-        'withdrawals_list': Withdrawal.objects.select_related('user'),
+        'today_page': today_page,
+        'past_page': past_page,
+        'today_total': today_qs.count(),
+        'past_total': past_qs.count(),
     })
 
 
@@ -229,4 +253,25 @@ def settings_view(request):
 def logs(request):
     return render(request, 'adminpanel/logs.html', {
         'logs_list': ActivityLog.objects.all()[:200],
+    })
+
+
+# ── 9. Payments (Paystack config helper) ────────────────────────────────
+@admin_required
+def payments(request):
+    """Show the exact URLs to add in the Paystack dashboard + key status.
+
+    The webhook URL is where Paystack server-to-server POSTs payment events
+    (Settings → Developer → Webhooks).  The callback URL is where the customer's
+    browser is redirected after checkout (Settings → Developer → Callback URL).
+    """
+    from dashboard.services import build_paystack_callback_url, build_paystack_webhook_url
+
+    return render(request, 'adminpanel/payments.html', {
+        'webhook_url': build_paystack_webhook_url(),
+        'callback_url': build_paystack_callback_url(),
+        'public_key_set': bool(getattr(settings, 'PAYSTACK_PUBLIC_KEY', '')),
+        'secret_key_set': bool(getattr(settings, 'PAYSTACK_SECRET_KEY', '')),
+        'mode': getattr(settings, 'PAYSTACK_MODE', 'test'),
+        'base_url': getattr(settings, 'SITE_BASE_URL', ''),
     })

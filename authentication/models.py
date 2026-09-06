@@ -23,6 +23,13 @@ class Profile(models.Model):
         max_digits=12, decimal_places=2, default=0,
         help_text='Commission earned from referred users.',
     )
+    # Notification preferences
+    notif_email = models.BooleanField(default=True, help_text='Email notifications for deposits/withdrawals.')
+    notif_roi = models.BooleanField(default=True, help_text='Daily ROI credit alerts.')
+    notif_referral = models.BooleanField(default=True, help_text='Referral commission alerts.')
+    # Display preferences
+    currency = models.CharField(max_length=10, default='NGN')
+    language = models.CharField(max_length=10, default='en')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def referred_by_ref_code(self):

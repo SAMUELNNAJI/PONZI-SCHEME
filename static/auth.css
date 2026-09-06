@@ -181,6 +181,9 @@ body {
   font-size: 12px;
   color: #9ca3af;
   text-align: center;
+  line-height: 1.6;
+  margin-top: 6px;
+}
 
 /* ── Form error message ── */
 .auth-error {
@@ -192,9 +195,6 @@ body {
   padding: 10px 14px;
   border-radius: 10px;
   margin-bottom: 14px;
-}
-  line-height: 1.6;
-  margin-top: 6px;
 }
 
 .auth-terms a {
@@ -218,4 +218,106 @@ body {
   .name-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Password visibility toggle ── */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .auth-input {
+  padding-right: 46px;
+  width: 100%;
+}
+
+.pw-eye {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.pw-eye:hover {
+  color: #1a3fd4;
+}
+
+.pw-eye svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.pw-eye.active {
+  color: #1a3fd4;
+}
+
+/* ── Referral code field (signup) ── */
+.ref-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ref-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ref-optional {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9ca3af;
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.ref-input {
+  /* inherits .auth-input styles */
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+/* Locked state — code came from referral URL */
+.ref-input.ref-locked {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+  font-weight: 600;
+  cursor: default;
+}
+
+.ref-input.ref-locked:focus {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.ref-hint {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ref-hint--filled {
+  color: #16a34a;
+}
+
+.ref-hint--filled svg {
+  stroke: #16a34a;
+  flex-shrink: 0;
 }

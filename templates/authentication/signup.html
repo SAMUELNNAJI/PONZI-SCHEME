@@ -12,8 +12,8 @@
 </head>
 <body>
 
-  <!-- Logo -->
-  <a href="index.html" class="auth-logo">
+    <!-- Logo -->
+  <a href="/" class="auth-logo">
     <div class="logo-circle">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
@@ -36,7 +36,6 @@
         <form class="auth-form" method="post">
       {% csrf_token %}
       {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
-      {% if ref_code %}<input type="hidden" name="ref_code" value="{{ ref_code }}" />{% endif %}
       <div class="name-row">
         <input
           class="auth-input"
@@ -84,6 +83,9 @@
           autocomplete="new-password"
           required
         />
+        <button type="button" class="pw-eye" onclick="togglePw(this)" aria-label="Toggle password visibility">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
       </div>
       <div class="password-wrapper">
         <input
@@ -95,6 +97,32 @@
           autocomplete="new-password"
           required
         />
+        <button type="button" class="pw-eye" onclick="togglePw(this)" aria-label="Toggle password visibility">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="ref-field-wrap">
+        <label class="ref-label" for="ref_code">
+          Referral code
+          <span class="ref-optional">optional</span>
+        </label>
+        <input
+          class="auth-input ref-input{% if ref_code %} ref-locked{% endif %}"
+          type="text"
+          id="ref_code"
+          name="ref_code"
+          placeholder="e.g. PW-A1B2C3D4"
+          value="{{ ref_code }}"
+          {% if ref_code %}readonly{% endif %}
+          autocomplete="off"
+          spellcheck="false"
+        />
+        {% if ref_code %}
+        <p class="ref-hint ref-hint--filled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+          Referral code applied automatically
+        </p>
+        {% endif %}
       </div>
       <button type="submit" class="btn-auth-submit">Create account</button>
     </form>

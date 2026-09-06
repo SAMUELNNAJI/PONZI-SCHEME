@@ -1,0 +1,95 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Payments{% endblock %}
+{% block nav_payments %}active{% endblock %}
+{% block nav_payments_mobile %}active{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Payments</h1>
+<p class="page-subtitle">Paystack configuration — add these URLs to your Paystack dashboard.</p>
+
+<div class="notice-box" style="margin-bottom: 14px;">
+  Go to <strong>Paystack Dashboard → Settings → Developer</strong> to add the two URLs below.
+  The webhook is how Paystack confirms payments to your server behind the scenes — once it is
+  connected, deposits are confirmed automatically even if a customer closes the browser after paying.
+</div>
+
+<div class="dash-card">
+  <div class="dash-card-title">1 · Webhook URL <span style="font-weight:500;font-size:12px;color:#16a34a;">(required)</span></div>
+  <p class="page-subtitle" style="margin-top:8px;">
+    Paste this into <strong>Settings → Developer → Webhooks → New Webhook URL</strong>.
+    Paystack will POST payment events here after every checkout.
+  </p>
+  <div class="ref-hero-box" style="margin-bottom:10px;">
+    <span id="webhookUrl">{{ webhook_url }}</span>
+    <button class="btn-copy" onclick="copyUrl('webhookUrl', this)">Copy</button>
+  </div>
+  <div class="notice-box" style="margin-bottom:10px;">
+    After saving, click <strong>"Send Test Webhook"</strong> in the Paystack dashboard — you should see
+    <code>{"status": "success"}</code> returned. Watch the <a href="/adminpanel/logs">Activity Logs</a>
+    for "via webhook" entries after real payments.
+  </div>
+</div>
+
+<div class="dash-card">
+  <div class="dash-card-title">2 · Redirect / Callback URL <span style="font-weight:500;font-size:12px;color:#16a34a;">(recommended)</span></div>
+  <p class="page-subtitle" style="margin-top:8px;">
+    Paste this into <strong>Settings → Developer → Callback URL</strong>. Customers are sent back here
+    after paying, and your site verifies the payment with Paystack.
+  </p>
+  <div class="ref-hero-box">
+    <span id="callbackUrl">{{ callback_url }}</span>
+    <button class="btn-copy" onclick="copyUrl('callbackUrl', this)">Copy</button>
+  </div>
+</div>
+
+<div class="dash-card">
+  <div class="dash-card-title">API Keys &amp; Mode</div>
+  <div class="notice-box">
+    {% if secret_key_set and public_key_set %}
+    ✅ Public key and Secret key are both set. Payments are processed in <strong>{{ mode }} mode</strong>.
+    {% elif secret_key_set %}
+    ⚠️ Secret key is set, but the public key is missing. Add <code>PAYSTACK_PUBLIC_KEY</code> to your <code>.env</code> file.
+    {% elif public_key_set %}
+    ⚠️ Public key is set, but the secret key is missing. Webhooks cannot be verified without it. Add <code>PAYSTACK_SECRET_KEY</code> to your <code>.env</code> file.
+    {% else %}
+    ⚠️ No Paystack keys are configured. Add <code>PAYSTACK_PUBLIC_KEY</code> and <code>PAYSTACK_SECRET_KEY</code> to your <code>.env</code> file, then restart the server.
+    {% endif %}
+  </div>
+  <div class="notice-box" style="margin-top:10px;">
+    <strong>Base URL:</strong> {{ base_url }}<br />
+    <span style="font-size:13px;color:#6b7280;">
+      The webhook and callback URLs above are built from <code>SITE_BASE_URL</code> in your <code>.env</code> file
+      (e.g. <code>https://yourdomain.com</code>). If your domain changes, update it there and reload this page.
+    </span>
+  </div>
+</div>
+
+<script>
+  function copyUrl(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const text = el.textContent.trim();
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.left = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+</script>
+{% endblock %}

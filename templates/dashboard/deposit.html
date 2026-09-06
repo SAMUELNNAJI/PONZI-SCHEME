@@ -46,8 +46,10 @@
       <h1 class="page-title">Deposit Funds</h1>
       <p class="page-subtitle">Add money to your wallet via bank transfer or USDT TRC20.</p>
 
-      {% if submitted %}<div class="notice-box success">✅ Deposit submitted! You will receive payment instructions shortly.</div>{% endif %}
+      {% if paid %}<div class="notice-box success">✅ Payment successful! Your deposit has been confirmed and your wallet has been credited.</div>{% endif %}
+      {% if pending %}<div class="notice-box warning">⏳ Your payment is still being processed. Paystack has not yet confirmed receipt of the funds — your deposit is <strong>pending</strong> and will be activated automatically as soon as the payment is confirmed.</div>{% endif %}
       {% if error %}<div class="notice-box error">⚠️ {{ error }}</div>{% endif %}
+      {% if request.GET.error %}<div class="notice-box error">⚠️ Payment was not completed or could not be verified. Please try again.</div>{% endif %}
 
       <div class="dash-card dep-card">
         <div class="dash-card-title">Choose deposit method</div>
@@ -92,18 +94,18 @@
           <select class="form-select" id="dep-plan" name="plan" onchange="onPlanChange(this)">
             <option value="" data-price="">— Choose a plan first —</option>
             {% for plan in plans %}
-            <option value="{{ plan.id }}" data-price="{{ plan.price }}">{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
+            <option value="{{ plan.id }}" data-price="{{ plan.price }}" {% if plan.id == selected_plan_id %}selected{% endif %}>{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
             {% endfor %}
           </select>
         </div>
 
         <div class="notice-box">
-          Select a plan above — the required amount will be filled in automatically. After submitting you will receive payment instructions, and your investment activates once payment is confirmed.
+          Select a plan above — the required amount will be filled in automatically. After clicking "Pay with Paystack" you will be redirected to Paystack's secure checkout to complete your payment. Your investment activates instantly once payment is confirmed.
         </div>
 
         <button class="btn-primary" type="submit" id="dep-submit" disabled style="opacity:0.5;cursor:not-allowed;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
-          Proceed to Deposit
+          Pay with Paystack
         </button>
         </form>
       </div>
@@ -226,6 +228,13 @@
         submitBtn.style.cursor  = 'not-allowed';
       }
     }
+
+    // Auto-fill the amount and enable submit when a plan was pre-selected
+    // (e.g. the user clicked "Invest now" or "Upgrade" on a plan card).
+    window.addEventListener('DOMContentLoaded', function () {
+      const sel = document.getElementById('dep-plan');
+      if (sel && sel.value) onPlanChange(sel);
+    });
   </script>
 
 </body>

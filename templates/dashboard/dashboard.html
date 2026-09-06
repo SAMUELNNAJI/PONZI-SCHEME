@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,15 +135,15 @@
       <!-- Balance card -->
       <div class="balance-card">
         <div class="balance-label">Available Balance</div>
-        <div class="balance-amount">₦0.00</div>
+        <div class="balance-amount">₦{{ stats.balance|floatformat:2|intcomma }}</div>
         <div class="balance-sub-row">
           <div class="balance-sub-card">
             <div class="balance-sub-label">Total invested</div>
-            <div class="balance-sub-amount">₦0.00</div>
+            <div class="balance-sub-amount">₦{{ stats.total_deposit|floatformat:2|intcomma }}</div>
           </div>
           <div class="balance-sub-card">
             <div class="balance-sub-label">Total withdrawn</div>
-            <div class="balance-sub-amount">₦0.00</div>
+            <div class="balance-sub-amount">₦{{ stats.total_withdrawn|floatformat:2|intcomma }}</div>
           </div>
         </div>
       </div>
@@ -160,7 +161,7 @@
               </svg>
             </span>
           </div>
-          <div class="stat-value green">₦0.00</div>
+          <div class="stat-value green">₦{{ stats.daily_roi|floatformat:2|intcomma }}</div>
         </div>
 
         <div class="stat-card">
@@ -174,7 +175,7 @@
               </svg>
             </span>
           </div>
-          <div class="stat-value">0</div>
+          <div class="stat-value">{{ stats.active_plans }}</div>
         </div>
 
         <div class="stat-card">
@@ -189,7 +190,7 @@
               </svg>
             </span>
           </div>
-          <div class="stat-value green">₦{{ stats.referral_balance|floatformat:2 }}</div>
+          <div class="stat-value green">₦{{ stats.referral_balance|floatformat:2|intcomma }}</div>
         </div>
 
         <div class="stat-card">
@@ -299,25 +300,53 @@
       <!-- Active investments -->
       <div class="info-section">
         <div class="info-section-title">Active investments</div>
-        {% if active_plans_list %}
-        {% for plan in active_plans_list %}
+        {% if active_deposits %}
+        {% for dep in active_deposits %}
         <div class="active-plan-item">
           <div class="active-plan-info">
-            <div class="active-plan-name">{{ plan.name }}</div>
-            <div class="active-plan-details">₦{{ plan.price|floatformat:0 }} · {{ plan.daily_percent }}% daily · {{ plan.duration_days }} days</div>
+            <div class="active-plan-name">{{ dep.plan.name }}</div>
+            <div class="active-plan-details">
+              ₦{{ dep.amount|floatformat:0 }} · {{ dep.plan.daily_percent }}% daily · {{ dep.plan.duration_days }} days
+              · Started {{ dep.created_at|date:"M d, Y" }}
+            </div>
           </div>
           <div class="active-plan-status">Active</div>
         </div>
         {% endfor %}
         {% else %}
-        <p class="info-empty">No active plans yet! <a href="plans.html">Browse plans</a></p>
+        <p class="info-empty">No active plans yet! <a href="{% url 'dashboard:plans' %}">Browse plans</a></p>
         {% endif %}
       </div>
 
       <!-- Recent activity -->
       <div class="info-section">
-        <div class="info-section-title">Recent activity</div>
-        <p class="info-empty">Nothing here yet.</p>
+        <div class="info-section-title">Recent activity <span style="font-size:11px;font-weight:500;color:#9ca3af;margin-left:6px;">last 24 hours</span></div>
+        {% if recent_activity %}
+        {% for tx in recent_activity %}
+        <div class="active-plan-item">
+          <div class="active-plan-info">
+            <div class="active-plan-name">
+              {% if tx.tx_type == 'deposit' %}
+                Deposit{% if tx.deposit.plan %} — {{ tx.deposit.plan.name }}{% endif %}
+              {% elif tx.tx_type == 'withdrawal' %}
+                Withdrawal
+              {% else %}
+                Referral Credit
+              {% endif %}
+            </div>
+            <div class="active-plan-details">{{ tx.created_at|date:"M d, Y H:i" }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:15px;font-weight:700;color:#111827;">₦{{ tx.amount|floatformat:0 }}</div>
+            <span class="badge {% if tx.status == 'approved' %}badge-green{% elif tx.status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">
+              {{ tx.status|capfirst }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="info-empty">No activity in the last 24 hours.</p>
+        {% endif %}
       </div>
 
       <!-- Notifications -->
@@ -329,8 +358,8 @@
           </svg>
           Notifications
         </div>
-        {% if notifications %}
-        {% for note in notifications %}
+        {% if all_notifications %}
+        {% for note in all_notifications %}
         <div class="notify-item">
           <div class="notify-item-title">{{ note.title }}</div>
           <div class="notify-item-body">{{ note.body }}</div>
@@ -347,7 +376,7 @@
 
   <!-- ── NOTIFICATION POPUP MODAL ── -->
   {% if latest_notification %}
-  <div id="notifyModal" class="notify-modal-overlay">
+  <div id="notifyModal" class="notify-modal-overlay" onclick="handleOverlayClick(event)">
     <div class="notify-modal">
       <button class="notify-modal-close" onclick="dismissNotify()">&times;</button>
       <div class="notify-modal-icon">
@@ -369,6 +398,12 @@
           body: 'notification_id={{ latest_notification.id }}'
         });
         document.getElementById('notifyModal').style.display = 'none';
+      }
+      function handleOverlayClick(e) {
+        // Dismiss if the click is on the dark backdrop, not the modal box itself
+        if (e.target === document.getElementById('notifyModal')) {
+          dismissNotify();
+        }
       }
     </script>
   </div>

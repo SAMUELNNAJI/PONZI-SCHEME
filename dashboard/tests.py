@@ -296,8 +296,8 @@ class PaystackWebhookTests(TestCase):
         self.assertEqual(dep.status, 'pending')
         self.assertFalse(dep.verified)
 
-    def test_callback_failed_redirects_to_error_page(self):
-        """Abandoned/failed verification → error page, deposit rejected."""
+    def test_callback_failed_redirects_to_failed_page(self):
+        """Abandoned/failed verification → failed page, deposit rejected."""
         dep = Deposit.objects.create(
             user=self.user, plan=self.plan, amount=Decimal('10000'),
             status='pending', paystack_ref='pw_cb_failed',
@@ -305,9 +305,26 @@ class PaystackWebhookTests(TestCase):
         with self._mock_verify('abandoned'):
             resp = self.client.get(f'/paystack/callback?reference={dep.paystack_ref}')
         self.assertEqual(resp.status_code, 302)
-        self.assertIn('?error=1', resp.url)
+        self.assertIn('?failed=1', resp.url)
         dep.refresh_from_db()
         self.assertEqual(dep.status, 'rejected')
+
+    def test_callback_api_unreachable_keeps_pending(self):
+        """Paystack API down (verify returns None) → pending page, NOT failed."""
+        dep = Deposit.objects.create(
+            user=self.user, plan=self.plan, amount=Decimal('10000'),
+            status='pending', paystack_ref='pw_cb_unreach',
+        )
+        with patch(
+            'dashboard.views.verify_paystack_transaction',
+            return_value=None,
+        ):
+            resp = self.client.get(f'/paystack/callback?reference={dep.paystack_ref}')
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn('?pending=1', resp.url)
+        dep.refresh_from_db()
+        self.assertEqual(dep.status, 'pending')
+        self.assertFalse(dep.verified)
 
     def test_deposit_page_shows_pending_notice(self):
         client = Client()
@@ -315,6 +332,13 @@ class PaystackWebhookTests(TestCase):
         resp = client.get('/deposit.html?pending=1')
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'payment is still being processed')
+
+    def test_deposit_page_shows_failed_notice(self):
+        client = Client()
+        client.force_login(self.user)
+        resp = client.get('/deposit.html?failed=1')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Payment failed')
 
 
 class AdminPaymentsPageTests(TestCase):

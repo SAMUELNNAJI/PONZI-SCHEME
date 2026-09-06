@@ -48,8 +48,9 @@
 
       {% if paid %}<div class="notice-box success">✅ Payment successful! Your deposit has been confirmed and your wallet has been credited.</div>{% endif %}
       {% if pending %}<div class="notice-box warning">⏳ Your payment is still being processed. Paystack has not yet confirmed receipt of the funds — your deposit is <strong>pending</strong> and will be activated automatically as soon as the payment is confirmed.</div>{% endif %}
+      {% if failed %}<div class="notice-box error">❌ <strong>Payment failed.</strong> The transaction was declined or cancelled — no money has left your account. Your deposit was <strong>not</strong> recorded. Please try again below.</div>{% endif %}
       {% if error %}<div class="notice-box error">⚠️ {{ error }}</div>{% endif %}
-      {% if request.GET.error %}<div class="notice-box error">⚠️ Payment was not completed or could not be verified. Please try again.</div>{% endif %}
+      {% if request.GET.error %}<div class="notice-box error">⚠️ Payment could not be verified. If you were charged, please contact support with your transaction reference.</div>{% endif %}
 
       <div class="dash-card dep-card">
         <div class="dash-card-title">Choose deposit method</div>

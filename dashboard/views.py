@@ -218,6 +218,7 @@ def deposit(request):
         'submitted': request.GET.get('submitted') == '1',
         'paid': request.GET.get('paid') == '1',
         'pending': request.GET.get('pending') == '1',
+        'failed': request.GET.get('failed') == '1',
         'recent_deposits': request.user.deposits.all()[:5],
     })
 
@@ -239,6 +240,14 @@ def paystack_callback(request):
         return redirect('/deposit.html?error=1')
 
     result = verify_paystack_transaction(reference)
+
+    if not result:
+        # Paystack unreachable / API error — don't assume failure, keep pending
+        dep = Deposit.objects.filter(paystack_ref=reference).first()
+        if dep and dep.status != 'rejected':
+            dep.status = 'pending'
+            dep.save(update_fields=['status'])
+        return redirect('/deposit.html?pending=1')
 
     # ── Payment confirmed by Paystack → credit the wallet ──────────────
     if result and result.get('status') == 'success':
@@ -269,7 +278,7 @@ def paystack_callback(request):
             dep.save(update_fields=['status'])
         return redirect('/deposit.html?pending=1')
 
-    # ── Payment failed, was abandoned, or could not be verified ────────
+    # ── Payment failed, was abandoned, or Paystack reported failure ─────
     try:
         dep = Deposit.objects.get(paystack_ref=reference)
         dep.status = 'rejected'
@@ -277,7 +286,7 @@ def paystack_callback(request):
     except Deposit.DoesNotExist:
         pass
 
-    return redirect('/deposit.html?error=1')
+    return redirect('/deposit.html?failed=1')
 
 
 @csrf_exempt

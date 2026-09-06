@@ -10,8 +10,6 @@
 <p class="page-subtitle">{{ today_total }} today · {{ past_total }} previous</p>
 
 {# ── helper macro for a withdrawal table ── #}
-{% with %}
-
 {# ── TODAY ── #}
 <h2 class="section-heading" style="margin-top:0">Today's Requests
   <span class="section-count">{{ today_total }}</span>
@@ -134,9 +132,8 @@
   {% endif %}
 </div>
 
-{% endwith %}
 
-<style>
+
 .section-heading {
   font-size: 1.05rem;
   font-weight: 700;

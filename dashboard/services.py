@@ -2,22 +2,24 @@
 from decimal import Decimal
 import hashlib
 import hmac
+import json
 import logging
 import ssl
 import urllib.error
 import urllib.request
-import json
+
+import requests as _requests
+
 from django.conf import settings
 from django.utils import timezone
-
-# A single reusable SSL context — fixes DNS/SSL failures on Windows where
-# urllib's default context path can fail even when the host is reachable.
-_SSL_CTX = ssl.create_default_context()
 
 from dashboard.models import Deposit, Withdrawal, Transaction
 from authentication.models import Profile
 
 logger = logging.getLogger(__name__)
+
+# SSL context for urllib (ZeptoMail email calls — Windows fix)
+_SSL_CTX = ssl.create_default_context()
 
 MIN_WITHDRAWAL = Decimal('5000.00')
 REFERRAL_COMMISSION_RATE = Decimal('10')  # 10% of deposit goes to referrer
@@ -85,18 +87,19 @@ def get_available_balance(user):
 
 
 def credit_wallet(deposit):
-    """Approve a deposit, credit the wallet, fire referral commission, create a transaction."""
+    """Approve a deposit, credit the wallet, fire referral commission."""
     deposit.status = 'approved'
     deposit.admin_confirmed = True
     deposit.verified = True
     deposit.reviewed_at = timezone.now()
     deposit.save(update_fields=['status', 'admin_confirmed', 'verified', 'reviewed_at'])
-    Transaction.objects.create(
+    # Create the approval transaction (avoid duplicates)
+    Transaction.objects.get_or_create(
         user=deposit.user,
         tx_type='deposit',
-        amount=deposit.amount,
-        status='approved',
         deposit=deposit,
+        status='approved',
+        defaults={'amount': deposit.amount},
     )
     credit_referrals(deposit)
 
@@ -174,7 +177,8 @@ def mark_withdrawal_paid(withdrawal):
     send_email(
         withdrawal.user.email,
         'Withdrawal Request Paid',
-        f'Your withdrawal of ₦{withdrawal.amount:,.2f} has been processed and sent to {withdrawal.account_name or "your"} account.',
+        f'Your withdrawal of ₦{withdrawal.amount:,.2f} has been processed and sent to '
+        f'{withdrawal.account_name or "your"} account.',
     )
 
 
@@ -205,7 +209,7 @@ def send_email(to_email, subject, body_html, name=''):
         },
     )
     try:
-        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
+        urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
         return True
     except (urllib.error.URLError, urllib.error.HTTPError) as e:
         print(f"[email-error] {to_email} | {subject} | {e}")
@@ -251,108 +255,91 @@ def notify_users(notification):
 
 
 # ---------------------------------------------------------------------------
-# Paystack payment gateway
+# Paystack payment gateway  (uses `requests` — works on all platforms)
 # ---------------------------------------------------------------------------
-def _paystack_headers():
-    """Return auth headers for Paystack API requests.
+def _paystack_session():
+    """Return a requests.Session pre-configured for Paystack API calls.
 
-    A ``User-Agent`` is REQUIRED: Paystack sits behind Cloudflare, which
-    blocks requests signed by Python's default ``Python-urllib/x`` agent
-    with HTTP 403 / Cloudflare error 1010 ("browser signature banned").
+    We use a Session so connection pooling is reused within a single request
+    cycle.  A custom User-Agent is required — Paystack sits behind Cloudflare
+    which blocks Python's default 'python-requests/x.y' agent.
     """
     secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
-    return {
-        'Content-Type': 'application/json',
+    s = _requests.Session()
+    s.headers.update({
         'Authorization': f'Bearer {secret}',
-        'User-Agent': 'Mozilla/5.0 (compatible; PaystackClient/1.0)',
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
-    }
+        'User-Agent': 'Mozilla/5.0 (compatible; PaystackClient/1.0)',
+    })
+    return s
 
 
 def initialize_paystack_transaction(email, amount, callback_url, reference):
     """Initialize a Paystack transaction.
 
     Returns ``(authorization_url, reference)`` on success, ``(None, None)``
-    on failure.  *amount* is in NGN and is converted to kobo (×100) for
-    the Paystack API.
+    on failure.  *amount* is in NGN — converted to kobo (×100) for the API.
     """
     if not settings.PAYSTACK_SECRET_KEY:
-        print('[paystack] PAYSTACK_SECRET_KEY is not set — skipping init')
+        logger.warning('[paystack] PAYSTACK_SECRET_KEY is not set — skipping init')
         return None, None
 
-    payload = json.dumps({
-        'email': email,
-        'amount': int(amount * 100),          # NGN → kobo
-        'reference': reference,
-        'callback_url': callback_url,
-        'currency': 'NGN',
-    })
-    req = urllib.request.Request(
-        'https://api.paystack.co/transaction/initialize',
-        data=payload.encode('utf-8'),
-        method='POST',
-        headers=_paystack_headers(),
-    )
     try:
-        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
-        data = json.loads(resp.read())
-        if data.get('status'):
-            return data['data'].get('authorization_url'), data['data'].get('reference')
-        logger.error(f'[paystack-init] API error: {data.get("message")}')
-        return None, None
-    except urllib.error.HTTPError as e:
-        body = ''
-        try:
-            body = e.read().decode('utf-8', 'replace')[:300]
-        except Exception:
-            pass
-        logger.error(f'[paystack-init] HTTP {e.code} from Paystack: {body}')
+        resp = _paystack_session().post(
+            'https://api.paystack.co/transaction/initialize',
+            json={
+                'email': email,
+                'amount': int(float(amount) * 100),   # NGN → kobo
+                'reference': reference,
+                'callback_url': callback_url,
+                'currency': 'NGN',
+            },
+            timeout=20,
+        )
+        data = resp.json()
+        if resp.ok and data.get('status'):
+            return (
+                data['data'].get('authorization_url'),
+                data['data'].get('reference'),
+            )
+        logger.error('[paystack-init] API error %s: %s', resp.status_code, data.get('message'))
         return None, None
     except Exception as e:
-        logger.error(f'[paystack-init-error] {type(e).__name__}: {e}')
+        logger.error('[paystack-init-error] %s: %s', type(e).__name__, e)
         return None, None
 
 
 def verify_paystack_transaction(reference):
     """Verify a Paystack transaction by reference.
 
-    Returns the Paystack ``data`` dict on success (with ``status == 'success'``)
-    or ``None`` if verification fails.
+    Returns the Paystack ``data`` dict (with ``status == 'success'``) on
+    success, or ``None`` if verification fails or the API is unreachable.
     """
     if not settings.PAYSTACK_SECRET_KEY:
+        logger.warning('[paystack] PAYSTACK_SECRET_KEY is not set — skipping verify')
         return None
 
-    req = urllib.request.Request(
-        f'https://api.paystack.co/transaction/verify/{reference}',
-        method='GET',
-        headers=_paystack_headers(),
-    )
     try:
-        resp = urllib.request.urlopen(req, timeout=15, context=_SSL_CTX)
-        data = json.loads(resp.read())
-        if data.get('status'):
+        resp = _paystack_session().get(
+            f'https://api.paystack.co/transaction/verify/{reference}',
+            timeout=20,
+        )
+        data = resp.json()
+        if resp.ok and data.get('status'):
             return data['data']
-        logger.error(f'[paystack-verify] API error: {data.get("message")}')
-        return None
-    except urllib.error.HTTPError as e:
-        body = ''
-        try:
-            body = e.read().decode('utf-8', 'replace')[:300]
-        except Exception:
-            pass
-        logger.error(f'[paystack-verify] HTTP {e.code} from Paystack: {body}')
+        logger.error('[paystack-verify] API error %s: %s', resp.status_code, data.get('message'))
         return None
     except Exception as e:
-        logger.error(f'[paystack-verify-error] {type(e).__name__}: {e}')
+        logger.error('[paystack-verify-error] %s: %s', type(e).__name__, e)
         return None
 
 
 def verify_paystack_webhook_signature(body, signature):
     """Verify the ``x-paystack-signature`` header over the raw request body.
 
-    Paystack signs every webhook with HMAC-SHA512 using the secret key.  Returns
-    ``True`` only for a valid signature.  The *body* must be the raw, un-decoded
-    bytes so the hash matches what Paystack signed.
+    Paystack signs every webhook with HMAC-SHA512 using the secret key.
+    *body* must be the raw un-decoded bytes so the hash matches exactly.
     """
     secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
     if not secret or not signature:

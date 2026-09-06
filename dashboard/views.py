@@ -142,6 +142,7 @@ def dashboard(request):
         'latest_notification': undismissed_notifications.first(),
         'referral_link': referral_link,
         'referral_code': profile.referral_code,
+        'payment_success': request.GET.get('paid') == '1',
     }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -181,9 +182,10 @@ def deposit(request):
         else:
             plan = Plan.objects.filter(id=plan_id, is_active=True).first() if plan_id else None
             paystack_ref = f'pw_{uuid.uuid4().hex}'
-            callback_url = (
-                f'{settings.SITE_BASE_URL}'
-                f'{reverse("dashboard:paystack_callback")}'
+            # Build callback URL from the live request so it always matches
+            # the actual domain — works correctly both locally and on Render.
+            callback_url = request.build_absolute_uri(
+                reverse('dashboard:paystack_callback')
             )
 
             auth_url, _ = initialize_paystack_transaction(
@@ -241,16 +243,18 @@ def paystack_callback(request):
 
     result = verify_paystack_transaction(reference)
 
+    # ── Paystack API unreachable — keep pending, do NOT mark failed ─────
     if not result:
-        # Paystack unreachable / API error — don't assume failure, keep pending
         dep = Deposit.objects.filter(paystack_ref=reference).first()
-        if dep and dep.status != 'rejected':
+        if dep and dep.status not in ('approved', 'rejected'):
             dep.status = 'pending'
             dep.save(update_fields=['status'])
         return redirect('/deposit.html?pending=1')
 
-    # ── Payment confirmed by Paystack → credit the wallet ──────────────
-    if result and result.get('status') == 'success':
+    pay_status = result.get('status', '')
+
+    # ── Payment confirmed ───────────────────────────────────────────────
+    if pay_status == 'success':
         try:
             dep = Deposit.objects.select_related('user', 'plan').get(
                 paystack_ref=reference,
@@ -258,31 +262,32 @@ def paystack_callback(request):
         except Deposit.DoesNotExist:
             return redirect('/deposit.html?error=1')
 
-        # Guard against double-crediting on repeat callbacks
-        if dep.verified:
-            return redirect('/deposit.html?paid=1')
+        if not dep.verified:
+            credit_wallet(dep)
+            log_action(
+                dep.user,
+                f'Payment confirmed: ₦{dep.amount:,.0f} deposit '
+                f'({dep.get_method_display()})',
+            )
 
-        credit_wallet(dep)
-        log_action(
-            dep.user,
-            f'Paid and confirmed deposit of ₦{dep.amount:,.0f} '
-            f'({dep.get_method_display()})',
-        )
-        return redirect('/deposit.html?paid=1')
+        # Redirect to dashboard with a success flag so the user sees
+        # their updated balance immediately
+        return redirect('/dashboard.html?paid=1')
 
-    # ── Payment is still being processed → keep it pending, NOT failed ──
-    if result and result.get('status') in ('pending', 'processing'):
+    # ── Still processing ────────────────────────────────────────────────
+    if pay_status in ('pending', 'processing'):
         dep = Deposit.objects.filter(paystack_ref=reference).first()
-        if dep and dep.status != 'rejected':
+        if dep and dep.status not in ('approved', 'rejected'):
             dep.status = 'pending'
             dep.save(update_fields=['status'])
         return redirect('/deposit.html?pending=1')
 
-    # ── Payment failed, was abandoned, or Paystack reported failure ─────
+    # ── Payment failed / abandoned ──────────────────────────────────────
     try:
         dep = Deposit.objects.get(paystack_ref=reference)
-        dep.status = 'rejected'
-        dep.save(update_fields=['status'])
+        if dep.status == 'pending':
+            dep.status = 'rejected'
+            dep.save(update_fields=['status'])
     except Deposit.DoesNotExist:
         pass
 

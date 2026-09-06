@@ -124,6 +124,15 @@
 
     <!-- ── MAIN CONTENT ── -->
     <main class="dash-main">
+      {% if payment_success %}
+      <div class="payment-success-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
+        <div>
+          <strong>Payment confirmed!</strong>
+          Your deposit has been approved and your plan is now active. Your balance will update as ROI accrues daily.
+        </div>
+      </div>
+      {% endif %}
       {% for note in notifications %}
       <div class="notice-box note-banner">
         <strong>{{ note.title }}</strong> — {{ note.body }}

@@ -897,6 +897,10 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
+  /* Prevent long cell content from overflowing the card */
+  table-layout: fixed;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .dash-table th {

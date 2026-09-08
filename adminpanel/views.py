@@ -257,12 +257,15 @@ def settings_view(request):
     if request.method == 'POST':
         min_dep = _dec(request.POST.get('min_deposit'))
         min_wd = _dec(request.POST.get('min_withdraw'))
+        usd_rate = _dec(request.POST.get('usd_rate'))
         if min_dep is not None and min_wd is not None:
             site.site_name = request.POST.get('site_name', site.site_name).strip()
             site.support_email = request.POST.get('support_email', site.support_email).strip()
             site.min_deposit = min_dep
             site.min_withdraw = min_wd
             site.usdt_bep20_address = request.POST.get('usdt_bep20_address', '').strip()
+            if usd_rate is not None and usd_rate > 0:
+                site.usd_rate = usd_rate
             site.save()
             log_action(request.user, 'Updated site settings')
             saved = True

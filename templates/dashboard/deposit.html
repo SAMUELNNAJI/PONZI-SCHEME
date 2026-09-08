@@ -1,4 +1,6 @@
 {% load static %}
+{% load humanize %}
+{% load currency_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
-  
-  {% load humanize %}
 </head>
 <body>
 
@@ -94,18 +94,10 @@
           <label for="dep-amount">Amount (₦)</label>
           <div class="dep-amount-wrap">
             <span class="dep-prefix">₦</span>
-            <input class="form-input" type="number" id="dep-amount" name="amount" placeholder="e.g. 10000" min="5000" />
-          </div>
-          <div class="dep-chips">
-            <button type="button" class="dep-chip" onclick="setAmount(this, 5000)">₦5,000</button>
-            <button type="button" class="dep-chip" onclick="setAmount(this, 10000)">₦10,000</button>
-            <button type="button" class="dep-chip" onclick="setAmount(this, 25000)">₦25,000</button>
-            <button type="button" class="dep-chip" onclick="setAmount(this, 50000)">₦50,000</button>
-            <button type="button" class="dep-chip" onclick="setAmount(this, 100000)">₦100,000</button>
+            <input class="form-input" type="number" id="dep-amount" name="amount" placeholder="Auto-filled when you select a plan" min="5000" readonly style="background:#f0f2f9;" />
           </div>
         </div>
 
-        {{/* Bank transfer — Paystack button */}}
         <div id="bank-panel">
           <div class="notice-box">
             Select a plan above — the required amount fills in automatically. You will be redirected to Paystack's secure checkout to complete payment. Your investment activates instantly once confirmed.
@@ -116,7 +108,6 @@
           </button>
         </div>
 
-        {{/* USDT BEP20 panel */}}
         <div id="usdt-panel" style="display:none;">
           {% if usdt_bep20_address %}
           <div class="usdt-deposit-box">
@@ -165,7 +156,7 @@
               <div class="tx-date">{{ d.created_at|date:"M d, Y H:i" }}</div>
             </div>
             <div class="tx-right">
-              <div class="tx-amount">₦{{ d.amount|floatformat:"0"|intcomma }}</div>
+              <div class="tx-amount">{% display_amount d.amount user_currency usd_rate %}</div>
               <span class="tx-status {{ d.status }}">{{ d.get_status_display }}</span>
             </div>
           </div>
@@ -243,11 +234,6 @@
       document.getElementById('bank-panel').style.display = v === 'bank' ? 'block' : 'none';
       document.getElementById('usdt-panel').style.display = v === 'usdt' ? 'block' : 'none';
     }
-    function setAmount(btn, amt) {
-      document.getElementById('dep-amount').value = amt;
-      document.querySelectorAll('.dep-chip').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-    }
     function onPlanChange(select) {
       const chosen = select.options[select.selectedIndex];
       const price  = chosen.dataset.price;
@@ -259,7 +245,6 @@
         amtInput.value    = price;
         amtInput.readOnly = true;
         amtInput.style.background = '#f0f2f9';
-        document.querySelectorAll('.dep-chip').forEach(c => c.classList.remove('active'));
         if (submitBank) { submitBank.disabled = false; submitBank.style.opacity = '1'; submitBank.style.cursor = 'pointer'; }
         if (submitUsdt) { submitUsdt.disabled = false; submitUsdt.style.opacity = '1'; submitUsdt.style.cursor = 'pointer'; }
       } else {

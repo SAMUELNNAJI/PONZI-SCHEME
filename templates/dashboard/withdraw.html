@@ -1,4 +1,6 @@
 {% load static %}
+{% load humanize %}
+{% load currency_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
-  
-  {% load humanize %}
 </head>
 <body>
 
@@ -54,7 +54,7 @@
       {% endif %}
 
       <div class="notice-box" style="margin-bottom: 12px;">
-        <strong>Available balance:</strong> ₦{{ available_balance|floatformat:2 }} — this amount is reduced immediately when you request a withdrawal.
+        <strong>Available balance:</strong> {% display_amount available_balance user_currency usd_rate %} — this amount is reduced immediately when you request a withdrawal.
       </div>
 
       <div class="notice-box warning">
@@ -162,7 +162,7 @@
               <div class="tx-date">{{ w.created_at|date:"M d, Y H:i" }}</div>
             </div>
             <div class="tx-right">
-              <div class="tx-amount">₦{{ w.amount|floatformat:"0"|intcomma }}</div>
+              <div class="tx-amount">{% display_amount w.amount user_currency usd_rate %}</div>
               <span class="tx-status {{ w.status }}">{{ w.get_status_display }}</span>
             </div>
           </div>

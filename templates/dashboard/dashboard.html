@@ -1,5 +1,6 @@
 {% load static %}
 {% load humanize %}
+{% load currency_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
-  
-  {% load humanize %}
 </head>
 <body>
 
@@ -144,18 +143,24 @@
       <!-- Balance card -->
       <div class="balance-card">
         <div class="balance-label">Available Balance</div>
-        <div class="balance-amount">₦{{ stats.balance|floatformat:2|intcomma }}</div>
+        <div class="balance-amount">{% display_amount stats.balance user_currency usd_rate %}</div>
         <div class="balance-sub-row">
           <div class="balance-sub-card">
             <div class="balance-sub-label">Total invested</div>
-            <div class="balance-sub-amount">₦{{ stats.total_deposit|floatformat:2|intcomma }}</div>
+            <div class="balance-sub-amount">{% display_amount stats.total_deposit user_currency usd_rate %}</div>
           </div>
           <div class="balance-sub-card">
             <div class="balance-sub-label">Total withdrawn</div>
-            <div class="balance-sub-amount">₦{{ stats.total_withdrawn|floatformat:2|intcomma }}</div>
+            <div class="balance-sub-amount">{% display_amount stats.total_withdrawn user_currency usd_rate %}</div>
           </div>
         </div>
       </div>
+
+      {% if user_currency == 'USD' %}
+      <div style="font-size:12px;color:#6b7280;margin:-8px 0 16px;text-align:center;">
+        Displaying in USD · 1 USD = ₦{{ usd_rate|floatformat:0 }}
+      </div>
+      {% endif %}
 
       <!-- Stat cards -->
       <div class="stat-cards">
@@ -170,7 +175,7 @@
               </svg>
             </span>
           </div>
-          <div class="stat-value green">₦{{ stats.daily_roi|floatformat:2|intcomma }}</div>
+          <div class="stat-value green">{% display_amount stats.daily_roi user_currency usd_rate %}</div>
         </div>
 
         <div class="stat-card">
@@ -199,7 +204,7 @@
               </svg>
             </span>
           </div>
-          <div class="stat-value green">₦{{ stats.referral_balance|floatformat:2|intcomma }}</div>
+          <div class="stat-value green">{% display_amount stats.referral_balance user_currency usd_rate %}</div>
         </div>
 
         <div class="stat-card">
@@ -315,7 +320,7 @@
           <div class="active-plan-info">
             <div class="active-plan-name">{{ dep.plan.name }}</div>
             <div class="active-plan-details">
-              ₦{{ dep.amount|floatformat:0 }} · {{ dep.plan.daily_percent }}% daily · {{ dep.plan.duration_days }} days
+              {% display_amount dep.amount user_currency usd_rate %} · {{ dep.plan.daily_percent }}% daily · {{ dep.plan.duration_days }} days
               · Started {{ dep.created_at|date:"M d, Y" }}
             </div>
           </div>
@@ -346,7 +351,7 @@
             <div class="active-plan-details">{{ tx.created_at|date:"M d, Y H:i" }}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:15px;font-weight:700;color:#111827;">₦{{ tx.amount|floatformat:0 }}</div>
+            <div style="font-size:15px;font-weight:700;color:#111827;">{% display_amount tx.amount user_currency usd_rate %}</div>
             <span class="badge {% if tx.status == 'approved' %}badge-green{% elif tx.status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">
               {{ tx.status|capfirst }}
             </span>

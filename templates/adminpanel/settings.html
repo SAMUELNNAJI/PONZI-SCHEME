@@ -30,6 +30,13 @@
         <label for="id_min_withdraw">Minimum withdrawal (₦)</label>
         <input class="form-input" id="id_min_withdraw" name="min_withdraw" type="number" step="0.01" min="0" value="{{ site.min_withdraw }}" />
       </div>
+      <div class="form-group">
+        <label for="id_usd_rate">
+          NGN → USD rate
+          <span style="font-size:11px;font-weight:400;color:var(--text-muted,#94a3b8);margin-left:6px;">₦ per $1 — used for users who choose USD display</span>
+        </label>
+        <input class="form-input" id="id_usd_rate" name="usd_rate" type="number" step="0.01" min="1" value="{{ site.usd_rate }}" />
+      </div>
     </div>
 
     <div class="form-group" style="margin-top:1.5rem;">

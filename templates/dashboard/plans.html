@@ -1,4 +1,6 @@
 {% load static %}
+{% load humanize %}
+{% load currency_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
-  
-  {% load humanize %}
 </head>
 <body>
 
@@ -100,8 +100,8 @@
           <div class="dash-plan-name{% if plan.accent %} accent{% endif %}">{{ plan.name }}</div>
           <div class="dash-plan-pct">{{ plan.daily_percent|floatformat:"0" }}%</div>
           <div class="dash-plan-days">daily for {{ plan.duration_days }} days</div>
-          <div class="dash-plan-range">Plan price: ₦{{ plan.price|floatformat:"0"|intcomma }}</div>
-          <div class="dash-plan-total">Daily ₦{{ plan.daily_profit|floatformat:"0"|intcomma }} · Total ₦{{ plan.total_payout|floatformat:"0"|intcomma }}</div>
+          <div class="dash-plan-range">Plan price: {% display_amount plan.price user_currency usd_rate %}</div>
+          <div class="dash-plan-total">Daily {% display_amount plan.daily_profit user_currency usd_rate %} · Total {% display_amount plan.total_payout user_currency usd_rate %}</div>
           <div class="dash-plan-actions">
             <a href="deposit.html?plan={{ plan.id }}" class="btn-plan-invest">Invest now</a>
             <a href="deposit.html?plan={{ plan.id }}" class="btn-plan-upgrade">Upgrade</a>

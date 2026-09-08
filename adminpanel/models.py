@@ -13,6 +13,10 @@ class SiteSetting(models.Model):
         max_length=255, blank=True, default='',
         help_text='Platform BEP20 (BSC) USDT deposit address. Users send crypto here.',
     )
+    usd_rate = models.DecimalField(
+        max_digits=12, decimal_places=2, default=1600,
+        help_text='NGN per 1 USD. Used to convert displayed balances for users who choose USD currency.',
+    )
 
     class Meta:
         verbose_name = 'Site settings'

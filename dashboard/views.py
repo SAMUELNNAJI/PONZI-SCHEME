@@ -43,8 +43,12 @@ def privacy(request):
 @login_required
 def plans(request):
     """All investment plans, rendered from the database."""
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    site = SiteSetting.load()
     return render(request, 'dashboard/plans.html', {
         'plans': Plan.objects.filter(is_active=True),
+        'user_currency': profile.currency,
+        'usd_rate': site.usd_rate,
     })
 
 
@@ -131,6 +135,7 @@ def dashboard(request):
         f'/signup.html?ref={profile.referral_code}'
     )
 
+    site = SiteSetting.load()
     context = {
         'stats': {
             'balance': available_balance,
@@ -151,6 +156,8 @@ def dashboard(request):
         'referral_link': referral_link,
         'referral_code': profile.referral_code,
         'payment_success': request.GET.get('paid') == '1',
+        'user_currency': profile.currency,
+        'usd_rate': site.usd_rate,
     }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -250,6 +257,8 @@ def deposit(request):
         'failed':  request.GET.get('failed')  == '1',
         'recent_deposits': request.user.deposits.all()[:5],
         'usdt_bep20_address': site.usdt_bep20_address,
+        'user_currency': Profile.objects.get_or_create(user=request.user)[0].currency,
+        'usd_rate': site.usd_rate,
     })
 
 
@@ -437,12 +446,15 @@ def withdraw(request):
             log_action(request.user, f'Requested a withdrawal of ₦{amount:,.0f}')
             return redirect('/withdraw.html?submitted=1')
 
+    profile, _ = Profile.objects.get_or_create(user=request.user)
     return render(request, 'dashboard/withdraw.html', {
         'error': error,
         'available_balance': available_balance,
         'submitted': request.GET.get('submitted') == '1',
         'recent_withdrawals': request.user.withdrawals.select_related().all()[:10],
         'min_withdraw': site.min_withdraw,
+        'user_currency': profile.currency,
+        'usd_rate': site.usd_rate,
     })
 
 
@@ -481,6 +493,7 @@ def referrals(request):
         f'/signup.html?ref={profile.referral_code}'
     )
 
+    site = SiteSetting.load()
     return render(request, 'dashboard/referrals.html', {
         'profile': profile,
         'referred_profiles': referred_profiles,
@@ -488,6 +501,8 @@ def referrals(request):
         'active_referrals': active_referrals,
         'total_earnings': total_earnings,
         'referral_link': referral_link,
+        'user_currency': profile.currency,
+        'usd_rate': site.usd_rate,
     })
 
 

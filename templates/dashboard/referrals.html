@@ -1,5 +1,6 @@
 {% load static %}
 {% load humanize %}
+{% load currency_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -119,7 +120,7 @@
           </div>
           <div>
             <div class="ref-stat-label">Total earnings</div>
-            <div class="ref-stat-value green">₦{{ total_earnings|floatformat:2|intcomma }}</div>
+            <div class="ref-stat-value green">{% display_amount total_earnings user_currency usd_rate %}</div>
           </div>
         </div>
       </div>

@@ -9,6 +9,10 @@ class SiteSetting(models.Model):
     support_email = models.EmailField(default='support@premiumwallet.com')
     min_deposit = models.DecimalField(max_digits=12, decimal_places=2, default=7000)
     min_withdraw = models.DecimalField(max_digits=12, decimal_places=2, default=5000)
+    usdt_bep20_address = models.CharField(
+        max_length=255, blank=True, default='',
+        help_text='Platform BEP20 (BSC) USDT deposit address. Users send crypto here.',
+    )
 
     class Meta:
         verbose_name = 'Site settings'

@@ -64,7 +64,7 @@ class Deposit(models.Model):
     ]
     METHODS = [
         ('bank', 'Bank Transfer'),
-        ('usdt', 'USDT TRC20'),
+        ('usdt', 'USDT BEP20'),
     ]
 
     user = models.ForeignKey(
@@ -91,6 +91,11 @@ class Deposit(models.Model):
         default=False,
         help_text='Set True manually if you credit the wallet by hand (dev fallback).',
     )
+    # USDT deposit: tx hash provided by user for admin to verify on-chain
+    usdt_tx_hash = models.CharField(
+        max_length=255, blank=True, default='',
+        help_text='Blockchain transaction hash submitted by user for USDT deposits.',
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -109,7 +114,11 @@ class Withdrawal(models.Model):
     ]
     METHODS = [
         ('bank', 'Bank Transfer'),
-        ('usdt', 'USDT TRC20'),
+        ('usdt', 'USDT BEP20'),
+    ]
+    USDT_NETWORKS = [
+        ('bep20', 'BEP20 (BSC)'),
+        ('trc20', 'TRC20 (TRON)'),
     ]
 
     user = models.ForeignKey(
@@ -120,7 +129,11 @@ class Withdrawal(models.Model):
     bank_name = models.CharField(max_length=100, blank=True)
     account_number = models.CharField(max_length=20, blank=True)
     account_name = models.CharField(max_length=100, blank=True)
-    usdt_address = models.CharField(max_length=100, blank=True)
+    usdt_address = models.CharField(max_length=200, blank=True)
+    usdt_network = models.CharField(
+        max_length=10, choices=USDT_NETWORKS, default='bep20', blank=True,
+        help_text='The blockchain network the user wants payout on.',
+    )
     status = models.CharField(max_length=10, choices=STATUS, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     requested_at = models.DateTimeField(

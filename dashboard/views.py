@@ -157,28 +157,28 @@ def dashboard(request):
 
 @login_required
 def deposit(request):
-    """Deposit page + Paystack checkout handler.
+    """Deposit page + Paystack / USDT BEP20 handler.
 
-    GET  — render the page with available plans and recent deposits.
-    POST — validate input, create a *pending* Deposit record with a unique
-           Paystack reference, then redirect the user to Paystack's hosted
-           checkout to complete the payment.
+    GET  — render the page with available plans, recent deposits, and the
+           platform's BEP20 USDT deposit address.
+    POST (method=bank) — validate, create pending Deposit, redirect to Paystack.
+    POST (method=usdt) — validate, create pending Deposit with user's tx hash,
+                         wait for admin to confirm on-chain and approve manually.
     """
     plans = Plan.objects.filter(is_active=True)
+    site  = SiteSetting.load()
     error = None
+    usdt_submitted = False
+
     selected_plan_id = request.GET.get('plan')
-    if selected_plan_id and not selected_plan_id.isdigit():
-        selected_plan_id = None
-    else:
-        selected_plan_id = int(selected_plan_id) if selected_plan_id else None
+    selected_plan_id = int(selected_plan_id) if selected_plan_id and selected_plan_id.isdigit() else None
 
     if request.method == 'POST':
-        site = SiteSetting.load()
         try:
             amount = round(float(request.POST.get('amount') or 0), 2)
         except ValueError:
             amount = 0
-        method = request.POST.get('method', 'bank')
+        method  = request.POST.get('method', 'bank')
         plan_id = request.POST.get('plan')
 
         if amount < float(site.min_deposit):
@@ -188,48 +188,68 @@ def deposit(request):
         elif method not in ('bank', 'usdt'):
             error = 'Choose a valid payment method.'
         else:
-            plan = Plan.objects.filter(id=plan_id, is_active=True).first() if plan_id else None
-            paystack_ref = f'pw_{uuid.uuid4().hex}'
-            # Build callback URL from the live request so it always matches
-            # the actual domain — works correctly both locally and on Render.
-            callback_url = request.build_absolute_uri(
-                reverse('dashboard:paystack_callback')
-            )
+            plan = Plan.objects.filter(id=plan_id, is_active=True).first()
 
-            auth_url, _ = initialize_paystack_transaction(
-                request.user.email, amount, callback_url, paystack_ref,
-            )
+            # ── USDT BEP20 manual deposit ────────────────────────────
+            if method == 'usdt':
+                tx_hash = request.POST.get('usdt_tx_hash', '').strip()
+                if not tx_hash:
+                    error = 'Please paste your BEP20 transaction hash so the admin can verify your payment.'
+                else:
+                    dep = Deposit.objects.create(
+                        user=request.user, plan=plan, amount=amount,
+                        method='usdt', usdt_tx_hash=tx_hash,
+                    )
+                    Transaction.objects.create(
+                        user=request.user, tx_type='deposit', amount=amount,
+                        status='pending', deposit=dep,
+                    )
+                    log_action(
+                        request.user,
+                        f'Submitted USDT BEP20 deposit of ₦{amount:,.0f} '
+                        f'(tx: {tx_hash[:20]}…)',
+                    )
+                    usdt_submitted = True
 
-            if auth_url:
-                dep = Deposit.objects.create(
-                    user=request.user, plan=plan, amount=amount, method=method,
-                    paystack_ref=paystack_ref,
-                )
-                Transaction.objects.create(
-                    user=request.user, tx_type='deposit', amount=amount,
-                    status='pending', deposit=dep,
-                )
-                log_action(
-                    request.user,
-                    f'Initiated a Paystack deposit of ₦{amount:,.0f} ({paystack_ref})',
-                )
-                # Send the user to Paystack to complete the payment
-                return redirect(auth_url)
+            # ── Paystack bank transfer ────────────────────────────────
             else:
-                error = (
-                    'Could not initialize payment at this time. '
-                    'Please try again in a moment.'
+                paystack_ref  = f'pw_{uuid.uuid4().hex}'
+                callback_url  = request.build_absolute_uri(
+                    reverse('dashboard:paystack_callback')
                 )
+                auth_url, _ = initialize_paystack_transaction(
+                    request.user.email, amount, callback_url, paystack_ref,
+                )
+                if auth_url:
+                    dep = Deposit.objects.create(
+                        user=request.user, plan=plan, amount=amount,
+                        method='bank', paystack_ref=paystack_ref,
+                    )
+                    Transaction.objects.create(
+                        user=request.user, tx_type='deposit', amount=amount,
+                        status='pending', deposit=dep,
+                    )
+                    log_action(
+                        request.user,
+                        f'Initiated Paystack deposit of ₦{amount:,.0f} ({paystack_ref})',
+                    )
+                    return redirect(auth_url)
+                else:
+                    error = (
+                        'Could not initialize payment at this time. '
+                        'Please try again in a moment.'
+                    )
 
     return render(request, 'dashboard/deposit.html', {
         'plans': plans,
         'selected_plan_id': selected_plan_id,
         'error': error,
-        'submitted': request.GET.get('submitted') == '1',
-        'paid': request.GET.get('paid') == '1',
+        'usdt_submitted': usdt_submitted,
+        'paid':    request.GET.get('paid')    == '1',
         'pending': request.GET.get('pending') == '1',
-        'failed': request.GET.get('failed') == '1',
+        'failed':  request.GET.get('failed')  == '1',
         'recent_deposits': request.user.deposits.all()[:5],
+        'usdt_bep20_address': site.usdt_bep20_address,
     })
 
 
@@ -397,8 +417,9 @@ def withdraw(request):
         ):
             error = 'Fill in your bank name, account number and account name.'
         elif method == 'usdt' and not request.POST.get('usdt_addr'):
-            error = 'Enter your USDT TRC20 wallet address.'
+            error = 'Enter your USDT wallet address.'
         else:
+            usdt_network = request.POST.get('usdt_network', 'bep20') if method == 'usdt' else ''
             wd = Withdrawal.objects.create(
                 user=request.user,
                 amount=amount,
@@ -407,6 +428,7 @@ def withdraw(request):
                 account_number=request.POST.get('acct', ''),
                 account_name=request.POST.get('acct_name', ''),
                 usdt_address=request.POST.get('usdt_addr', ''),
+                usdt_network=usdt_network,
             )
             Transaction.objects.create(
                 user=request.user, tx_type='withdrawal', amount=amount,

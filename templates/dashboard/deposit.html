@@ -46,11 +46,16 @@
       <h1 class="page-title">Deposit Funds</h1>
       <p class="page-subtitle">Add money to your wallet via bank transfer or USDT TRC20.</p>
 
+      {% if usdt_submitted %}
+      <div class="notice-box success">
+        ✅ USDT deposit submitted! Your transaction hash has been received. The admin will verify your payment on-chain and activate your plan within 1–3 hours.
+      </div>
+      {% endif %}
       {% if paid %}<div class="notice-box success">✅ Payment successful! Your deposit has been confirmed and your wallet has been credited.</div>{% endif %}
-      {% if pending %}<div class="notice-box warning">⏳ Your payment is still being processed. Paystack has not yet confirmed receipt of the funds — your deposit is <strong>pending</strong> and will be activated automatically as soon as the payment is confirmed.</div>{% endif %}
-      {% if failed %}<div class="notice-box error">❌ <strong>Payment failed.</strong> The transaction was declined or cancelled — no money has left your account. Your deposit was <strong>not</strong> recorded. Please try again below.</div>{% endif %}
+      {% if pending %}<div class="notice-box warning">⏳ Your payment is still being processed. It will be activated automatically once confirmed.</div>{% endif %}
+      {% if failed %}<div class="notice-box error">❌ Payment failed or was cancelled. No money left your account. Please try again.</div>{% endif %}
       {% if error %}<div class="notice-box error">⚠️ {{ error }}</div>{% endif %}
-      {% if request.GET.error %}<div class="notice-box error">⚠️ Payment could not be verified. If you were charged, please contact support with your transaction reference.</div>{% endif %}
+      {% if request.GET.error %}<div class="notice-box error">⚠️ Payment could not be verified. Contact support with your transaction reference.</div>{% endif %}
 
       <div class="dash-card dep-card">
         <div class="dash-card-title">Choose deposit method</div>
@@ -65,14 +70,24 @@
             <div class="dep-method selected" data-value="bank" onclick="pickMethod(this)">
               <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M3 10l9-7 9 7"/><path d="M9 21v-6h6v6"/></svg>
               <div class="dep-method-name">Bank Transfer</div>
-              <div class="dep-method-sub">NGN · 5–30 mins</div>
+              <div class="dep-method-sub">NGN · via Paystack</div>
             </div>
             <div class="dep-method" data-value="usdt" onclick="pickMethod(this)">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 9h7"/><path d="M12 9v7.5"/></svg>
-              <div class="dep-method-name">USDT TRC20</div>
-              <div class="dep-method-sub">Crypto · ~10 mins</div>
+              <div class="dep-method-name">USDT BEP20</div>
+              <div class="dep-method-sub">Crypto · BSC network</div>
             </div>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="dep-plan">Select plan</label>
+          <select class="form-select" id="dep-plan" name="plan" onchange="onPlanChange(this)">
+            <option value="" data-price="">— Choose a plan first —</option>
+            {% for plan in plans %}
+            <option value="{{ plan.id }}" data-price="{{ plan.price }}" {% if plan.id == selected_plan_id %}selected{% endif %}>{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
+            {% endfor %}
+          </select>
         </div>
 
         <div class="form-group">
@@ -90,24 +105,52 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="dep-plan">Select plan</label>
-          <select class="form-select" id="dep-plan" name="plan" onchange="onPlanChange(this)">
-            <option value="" data-price="">— Choose a plan first —</option>
-            {% for plan in plans %}
-            <option value="{{ plan.id }}" data-price="{{ plan.price }}" {% if plan.id == selected_plan_id %}selected{% endif %}>{{ plan.name }} – {{ plan.daily_percent|floatformat:"0" }}% daily / {{ plan.duration_days }} days (₦{{ plan.price|floatformat:"0"|intcomma }})</option>
-            {% endfor %}
-          </select>
+        {{/* Bank transfer — Paystack button */}}
+        <div id="bank-panel">
+          <div class="notice-box">
+            Select a plan above — the required amount fills in automatically. You will be redirected to Paystack's secure checkout to complete payment. Your investment activates instantly once confirmed.
+          </div>
+          <button class="btn-primary" type="submit" id="dep-submit" disabled style="opacity:0.5;cursor:not-allowed;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
+            Pay with Paystack
+          </button>
         </div>
 
-        <div class="notice-box">
-          Select a plan above — the required amount will be filled in automatically. After clicking "Pay with Paystack" you will be redirected to Paystack's secure checkout to complete your payment. Your investment activates instantly once payment is confirmed.
-        </div>
+        {{/* USDT BEP20 panel */}}
+        <div id="usdt-panel" style="display:none;">
+          {% if usdt_bep20_address %}
+          <div class="usdt-deposit-box">
+            <div class="usdt-deposit-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="9"/><path d="M8.5 9h7"/><path d="M12 9v7.5"/></svg>
+              Send USDT (BEP20 / BSC network) to this address
+            </div>
+            <div class="usdt-deposit-addr-row">
+              <span id="usdt-dep-addr" class="usdt-deposit-addr">{{ usdt_bep20_address }}</span>
+              <button type="button" class="btn-copy-usdt" onclick="copyUSDTAddr()">Copy</button>
+            </div>
+            <p class="usdt-deposit-warn">
+              ⚠️ Only send <strong>USDT on the BEP20 (BSC)</strong> network. Sending any other token or using a different network will result in permanent loss of funds.
+            </p>
+          </div>
+          {% else %}
+          <div class="notice-box warning">USDT deposit address not configured yet. Contact support.</div>
+          {% endif %}
 
-        <button class="btn-primary" type="submit" id="dep-submit" disabled style="opacity:0.5;cursor:not-allowed;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
-          Pay with Paystack
-        </button>
+          <div class="form-group" style="margin-top:1rem;">
+            <label for="usdt-tx-hash">Your transaction hash (TxID)</label>
+            <input class="form-input" type="text" id="usdt-tx-hash" name="usdt_tx_hash"
+                   placeholder="Paste the BSCScan TxID after sending, e.g. 0xabc123…"
+                   autocomplete="off" spellcheck="false" />
+            <p style="font-size:12px;color:#6b7280;margin-top:4px;">
+              After sending, paste the transaction hash so the admin can verify your payment on-chain. Your plan activates once confirmed (usually within 1–3 hours).
+            </p>
+          </div>
+
+          <button class="btn-primary" type="submit" id="dep-submit-usdt" disabled style="opacity:0.5;cursor:not-allowed;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
+            Submit USDT Deposit
+          </button>
+        </div>
         </form>
       </div>
 
@@ -195,7 +238,10 @@
     function pickMethod(el) {
       document.querySelectorAll('.dep-method').forEach(m => m.classList.remove('selected'));
       el.classList.add('selected');
-      document.getElementById('dep-method').value = el.dataset.value;
+      const v = el.dataset.value;
+      document.getElementById('dep-method').value = v;
+      document.getElementById('bank-panel').style.display = v === 'bank' ? 'block' : 'none';
+      document.getElementById('usdt-panel').style.display = v === 'usdt' ? 'block' : 'none';
     }
     function setAmount(btn, amt) {
       document.getElementById('dep-amount').value = amt;
@@ -205,33 +251,33 @@
     function onPlanChange(select) {
       const chosen = select.options[select.selectedIndex];
       const price  = chosen.dataset.price;
-      const amtInput  = document.getElementById('dep-amount');
-      const submitBtn = document.getElementById('dep-submit');
+      const amtInput = document.getElementById('dep-amount');
+      const submitBank = document.getElementById('dep-submit');
+      const submitUsdt = document.getElementById('dep-submit-usdt');
 
       if (price) {
-        // Fill amount with the plan price and lock the field
         amtInput.value    = price;
         amtInput.readOnly = true;
         amtInput.style.background = '#f0f2f9';
-        // Clear quick-chip active state
         document.querySelectorAll('.dep-chip').forEach(c => c.classList.remove('active'));
-        // Enable submit
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        submitBtn.style.cursor  = 'pointer';
+        if (submitBank) { submitBank.disabled = false; submitBank.style.opacity = '1'; submitBank.style.cursor = 'pointer'; }
+        if (submitUsdt) { submitUsdt.disabled = false; submitUsdt.style.opacity = '1'; submitUsdt.style.cursor = 'pointer'; }
       } else {
-        // No plan selected — clear and disable
         amtInput.value    = '';
         amtInput.readOnly = false;
         amtInput.style.background = '';
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.5';
-        submitBtn.style.cursor  = 'not-allowed';
+        if (submitBank) { submitBank.disabled = true; submitBank.style.opacity = '0.5'; submitBank.style.cursor = 'not-allowed'; }
+        if (submitUsdt) { submitUsdt.disabled = true; submitUsdt.style.opacity = '0.5'; submitUsdt.style.cursor = 'not-allowed'; }
       }
     }
-
-    // Auto-fill the amount and enable submit when a plan was pre-selected
-    // (e.g. the user clicked "Invest now" or "Upgrade" on a plan card).
+    function copyUSDTAddr() {
+      const addr = document.getElementById('usdt-dep-addr').textContent.trim();
+      navigator.clipboard.writeText(addr).then(() => {
+        const btn = document.querySelector('.btn-copy-usdt');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
     window.addEventListener('DOMContentLoaded', function () {
       const sel = document.getElementById('dep-plan');
       if (sel && sel.value) onPlanChange(sel);

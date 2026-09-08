@@ -118,11 +118,29 @@
 
         <div id="usdt-fields" style="display:none;">
           <div class="form-group">
-            <label for="wd-usdt-addr">USDT TRC20 wallet address</label>
-            <input class="form-input" type="text" id="wd-usdt-addr" name="usdt_addr" placeholder="e.g. TXk9...your TRC20 address" />
+            <label>Network</label>
+            <div class="dep-method-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="dep-method selected" data-net="bep20" onclick="pickNetwork(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 9h7"/><path d="M12 9v7.5"/></svg>
+                <div class="dep-method-name">BEP20</div>
+                <div class="dep-method-sub">BSC network</div>
+              </div>
+              <div class="dep-method" data-net="trc20" onclick="pickNetwork(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 9h7"/><path d="M12 9v7.5"/></svg>
+                <div class="dep-method-name">TRC20</div>
+                <div class="dep-method-sub">TRON network</div>
+              </div>
+            </div>
+            <input type="hidden" id="wd-usdt-network" name="usdt_network" value="bep20" />
+          </div>
+          <div class="form-group">
+            <label for="wd-usdt-addr">Your USDT wallet address</label>
+            <input class="form-input" type="text" id="wd-usdt-addr" name="usdt_addr"
+                   placeholder="Paste your BEP20 or TRC20 wallet address"
+                   autocomplete="off" spellcheck="false" />
           </div>
           <div class="notice-box">
-            Payouts are sent on the TRON (TRC20) network only. Double-check your address — crypto withdrawals cannot be reversed.
+            ⚠️ Double-check your address and selected network before submitting. Crypto withdrawals are irreversible.
           </div>
         </div>
 
@@ -221,6 +239,12 @@
       document.getElementById('wd-method').value = v;
       document.getElementById('bank-fields').style.display = v === 'bank' ? 'block' : 'none';
       document.getElementById('usdt-fields').style.display = v === 'usdt' ? 'block' : 'none';
+    }
+    function pickNetwork(el) {
+      // Only toggle within the network grid inside #usdt-fields
+      el.closest('.dep-method-grid').querySelectorAll('.dep-method').forEach(m => m.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('wd-usdt-network').value = el.dataset.net;
     }
     function setWAmount(btn, amt) {
       document.getElementById('wd-amount').value = amt;

@@ -1634,6 +1634,18 @@ body {
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table .num { font-variant-numeric: tabular-nums; font-weight: 700; }
 
+/* Scroll container — wraps both admin-table and dash-table */
+.dash-card,
+.admin-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Tables themselves stay full natural width — the card scrolls them */
+.admin-table,
+.dash-table {
+  min-width: 560px;
+}
+
 .btn-admin-sm {
   display: inline-block; border: none; cursor: pointer; font-family: inherit;
   font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px;
@@ -1651,7 +1663,6 @@ body {
 .admin-form-grid .full { grid-column: 1 / -1; }
 
 @media (max-width: 768px) {
-  .admin-table { display: block; overflow-x: auto; white-space: nowrap; }
   .admin-form-grid { grid-template-columns: 1fr; }
 }
 
@@ -2134,3 +2145,63 @@ body {
 }
 .page-btn:hover { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); }
 .page-info { font-size: .8rem; color: var(--text-muted, #94a3b8); margin-left: auto; }
+
+/* ── USDT BEP20 deposit address box ── */
+.usdt-deposit-box {
+  background: #0d1f2d;
+  border: 1.5px solid #16a34a;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.usdt-deposit-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4ade80;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 10px;
+}
+.usdt-deposit-addr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+.usdt-deposit-addr {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  word-break: break-all;
+  min-width: 0;
+}
+.btn-copy-usdt {
+  flex-shrink: 0;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+}
+.btn-copy-usdt:hover { background: #15803d; }
+.usdt-deposit-warn {
+  font-size: 12px;
+  color: #fbbf24;
+  line-height: 1.5;
+  margin: 0;
+}
+.usdt-deposit-warn strong { color: #fde68a; }

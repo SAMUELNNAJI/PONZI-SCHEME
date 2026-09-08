@@ -7,14 +7,14 @@
 
 {% block content %}
 <h1 class="page-title">Deposits</h1>
-<p class="page-subtitle">{{ total }} deposit{{ total|pluralize }} — confirmed automatically via Paystack.</p>
+<p class="page-subtitle">{{ total }} deposit{{ total|pluralize }} — bank deposits confirmed via Paystack · USDT deposits require manual verification.</p>
 
 <div class="dash-card">
   <table class="admin-table">
     <thead>
       <tr>
         <th>User</th><th>Amount</th><th>Method</th>
-        <th>Plan</th><th>Paystack Ref</th><th>Date</th><th>Status</th>
+        <th>Plan</th><th>Reference / Tx Hash</th><th>Date</th><th>Status</th><th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -24,12 +24,39 @@
         <td class="num">₦{{ d.amount|floatformat:"0"|intcomma }}</td>
         <td>{{ d.get_method_display }}</td>
         <td>{{ d.plan.name|default:"—" }}</td>
-        <td><span class="tx-date">{{ d.paystack_ref|default:"—" }}</span></td>
+        <td>
+          {% if d.method == 'usdt' %}
+            {% if d.usdt_tx_hash %}
+            <a href="https://bscscan.com/tx/{{ d.usdt_tx_hash }}" target="_blank" rel="noopener"
+               class="tx-date" style="text-decoration:underline;word-break:break-all;">
+              {{ d.usdt_tx_hash|truncatechars:24 }}
+            </a>
+            {% else %}
+            <span class="tx-date" style="color:#f87171;">No hash provided</span>
+            {% endif %}
+          {% else %}
+            <span class="tx-date">{{ d.paystack_ref|default:"—" }}</span>
+          {% endif %}
+        </td>
         <td>{{ d.created_at|date:"M d, Y H:i" }}</td>
         <td><span class="tx-status {{ d.status }}">{{ d.get_status_display }}</span></td>
+        <td>
+          {% if d.method == 'usdt' and d.status == 'pending' %}
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ d.pk }}" />
+            <button class="btn-admin-sm green" name="action" value="approve">Approve</button>
+            <button class="btn-admin-sm red"   name="action" value="reject">Reject</button>
+          </form>
+          {% elif d.method == 'usdt' and d.status != 'pending' %}
+          <span class="tx-date">reviewed {{ d.reviewed_at|date:"M d, H:i" }}</span>
+          {% else %}
+          <span class="tx-date">auto-confirmed</span>
+          {% endif %}
+        </td>
       </tr>
       {% empty %}
-      <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No deposits yet.</td></tr>
+      <tr><td colspan="8" style="text-align:center;color:var(--text-muted)">No deposits yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

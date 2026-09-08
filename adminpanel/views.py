@@ -136,8 +136,29 @@ def plan_form(request, pk=None):
 @admin_required
 def deposits(request):
     from django.core.paginator import Paginator
+    from django.utils import timezone
+    from dashboard.services import credit_wallet
 
-    # Deposits are auto-confirmed by Paystack webhook — no manual approval needed.
+    if request.method == 'POST':
+        dep = get_object_or_404(Deposit, pk=request.POST.get('pk'))
+        action = request.POST.get('action')
+        # Only USDT deposits need manual approval
+        if dep.method == 'usdt' and dep.status == 'pending':
+            if action == 'approve':
+                credit_wallet(dep)
+                log_action(request.user,
+                    f'Approved USDT deposit #{dep.id} (₦{dep.amount:,.0f}) '
+                    f'for {dep.user.username}')
+            elif action == 'reject':
+                dep.status = 'rejected'
+                dep.reviewed_at = timezone.now()
+                dep.save(update_fields=['status', 'reviewed_at'])
+                dep.transactions.update(status='rejected')
+                log_action(request.user,
+                    f'Rejected USDT deposit #{dep.id} (₦{dep.amount:,.0f}) '
+                    f'for {dep.user.username}')
+        return redirect('adminpanel:deposits')
+
     all_deposits = Deposit.objects.select_related('user', 'plan').order_by('-created_at')
     paginator = Paginator(all_deposits, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -241,6 +262,7 @@ def settings_view(request):
             site.support_email = request.POST.get('support_email', site.support_email).strip()
             site.min_deposit = min_dep
             site.min_withdraw = min_wd
+            site.usdt_bep20_address = request.POST.get('usdt_bep20_address', '').strip()
             site.save()
             log_action(request.user, 'Updated site settings')
             saved = True
